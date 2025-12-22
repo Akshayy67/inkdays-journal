@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MilestoneUnlocks } from '@/types/world';
 import { Palette, Sparkles, Music, Crown, Award, Lock, Check, Volume2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface MilestoneRewardsProps {
   currentDay: number;
@@ -81,6 +82,7 @@ const MilestoneRewards: React.FC<MilestoneRewardsProps> = ({
       customTheme: theme,
     });
     setExpandedMilestone(null);
+    toast.success(`🎨 Custom Theme unlocked: ${theme}!`);
   };
 
   const handleClaimParticles = () => {
@@ -88,6 +90,7 @@ const MilestoneRewards: React.FC<MilestoneRewardsProps> = ({
       day20Particles: true,
     });
     setExpandedMilestone(null);
+    toast.success('✨ Particle Effects activated!');
   };
 
   const handleClaimSound = (sound: 'lofi' | 'nature' | 'cosmic') => {
@@ -96,6 +99,7 @@ const MilestoneRewards: React.FC<MilestoneRewardsProps> = ({
       selectedSound: sound,
     });
     setExpandedMilestone(null);
+    toast.success(`🎵 Ambient Sound unlocked: ${sound}!`);
   };
 
   const handleClaimTitle = () => {
@@ -105,6 +109,7 @@ const MilestoneRewards: React.FC<MilestoneRewardsProps> = ({
         personalTitle: titleInput.trim(),
       });
       setExpandedMilestone(null);
+      toast.success(`🏆 Personal Title claimed: ${titleInput.trim()}!`);
     }
   };
 
@@ -113,6 +118,7 @@ const MilestoneRewards: React.FC<MilestoneRewardsProps> = ({
       day50Crown: true,
     });
     setExpandedMilestone(null);
+    toast.success('👑 The Insane Crown is yours! Zen Garden unlocked!');
   };
 
   return (
