@@ -117,14 +117,8 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
         transition={{ delay: 0.3 }}
         className="text-center mt-4"
       >
-        <div className="inline-flex items-center gap-3 px-5 py-3 rounded-xl bg-card/80 backdrop-blur-sm border border-border">
-          <span className="text-3xl font-bold text-foreground">{daysRemaining}</span>
-          <div className="text-left">
-            <p className="text-sm font-medium text-foreground">days remaining</p>
-            <p className="text-xs text-muted-foreground dark:text-muted-foreground/60">
-              {progress.currentDay} of {progress.targetDays} completed
-            </p>
-          </div>
+        <div className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-card/80 backdrop-blur-sm border border-border">
+          <span className="text-2xl font-bold text-foreground">{daysRemaining} days to reach insane</span>
         </div>
       </motion.div>
       
