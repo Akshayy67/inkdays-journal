@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { X, Calendar } from 'lucide-react';
+import { X, Calendar, Leaf, Snowflake, Infinity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { RoutineType } from '@/types/habit';
 
 interface AddRoutineModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (name: string, duration: number, startDate: string) => void;
+  onAdd: (name: string, duration: number, startDate: string, routineType: RoutineType) => void;
 }
 
 const AddRoutineModal: React.FC<AddRoutineModalProps> = ({ isOpen, onClose, onAdd }) => {
@@ -13,25 +14,48 @@ const AddRoutineModal: React.FC<AddRoutineModalProps> = ({ isOpen, onClose, onAd
   const [duration, setDuration] = useState<number>(30);
   const [customDuration, setCustomDuration] = useState<string>('');
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [routineType, setRoutineType] = useState<RoutineType>('permanent');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
       const finalDuration = duration === -1 ? parseInt(customDuration) || 30 : duration;
-      onAdd(name.trim(), finalDuration, startDate);
+      onAdd(name.trim(), finalDuration, startDate, routineType);
       setName('');
       setDuration(30);
       setCustomDuration('');
       setStartDate(new Date().toISOString().split('T')[0]);
+      setRoutineType('permanent');
       onClose();
     }
   };
 
   const durationOptions = [
-    { value: 30, label: '30 Days' },
-    { value: 60, label: '60 Days' },
-    { value: 90, label: '90 Days' },
+    { value: 30, label: '30' },
+    { value: 60, label: '60' },
+    { value: 90, label: '90' },
     { value: -1, label: 'Custom' },
+  ];
+
+  const routineTypeOptions: { value: RoutineType; label: string; icon: React.ReactNode; description: string }[] = [
+    { 
+      value: 'permanent', 
+      label: 'Permanent', 
+      icon: <Infinity className="w-4 h-4" />,
+      description: 'An ongoing practice'
+    },
+    { 
+      value: 'seasonal', 
+      label: 'Seasonal', 
+      icon: <Leaf className="w-4 h-4" />,
+      description: 'For a specific season'
+    },
+    { 
+      value: 'temporary', 
+      label: 'Temporary', 
+      icon: <Snowflake className="w-4 h-4" />,
+      description: 'A time-bound challenge'
+    },
   ];
 
   return (
@@ -77,9 +101,38 @@ const AddRoutineModal: React.FC<AddRoutineModalProps> = ({ isOpen, onClose, onAd
                   />
                 </div>
 
+                {/* Routine Type */}
                 <div className="mb-4">
                   <label className="block text-sm text-muted-foreground mb-2">
-                    Duration
+                    Routine Type
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {routineTypeOptions.map(option => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setRoutineType(option.value)}
+                        className={`
+                          flex flex-col items-center gap-1 py-3 px-2 rounded-lg border transition-all text-center
+                          ${routineType === option.value
+                            ? 'border-primary/50 bg-primary/10 text-primary'
+                            : 'border-border bg-secondary text-muted-foreground hover:text-foreground'
+                          }
+                        `}
+                      >
+                        {option.icon}
+                        <span className="text-xs font-medium">{option.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground/60 mt-2 text-center">
+                    {routineTypeOptions.find(o => o.value === routineType)?.description}
+                  </p>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm text-muted-foreground mb-2">
+                    Duration (days)
                   </label>
                   <div className="grid grid-cols-4 gap-1.5">
                     {durationOptions.map(option => (

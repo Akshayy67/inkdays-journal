@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { TimeOfDay } from '@/types/habit';
-import { X, Sun, Moon, Clock, ChevronRight } from 'lucide-react';
+import { X, Sun, Moon, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface AddHabitModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (name: string, timeOfDay: TimeOfDay, parentHabitId?: string) => void;
+  onAdd: (name: string, timeOfDay: TimeOfDay, parentHabitId?: string, intent?: string) => void;
   parentHabits?: { id: string; name: string }[];
 }
 
@@ -15,15 +15,22 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onAdd, p
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>('anytime');
   const [isSubHabit, setIsSubHabit] = useState(false);
   const [parentHabitId, setParentHabitId] = useState<string>('');
+  const [intent, setIntent] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
-      onAdd(name.trim(), timeOfDay, isSubHabit && parentHabitId ? parentHabitId : undefined);
+      onAdd(
+        name.trim(), 
+        timeOfDay, 
+        isSubHabit && parentHabitId ? parentHabitId : undefined,
+        intent.trim() || undefined
+      );
       setName('');
       setTimeOfDay('anytime');
       setIsSubHabit(false);
       setParentHabitId('');
+      setIntent('');
       onClose();
     }
   };
@@ -49,10 +56,10 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onAdd, p
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md"
+            className="fixed inset-4 z-50 flex items-center justify-center pointer-events-none"
           >
-            <div className="floating-panel p-6">
-              <div className="flex items-center justify-between mb-6">
+            <div className="floating-panel p-5 w-full max-w-md max-h-[90vh] overflow-y-auto pointer-events-auto">
+              <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-foreground">New Habit</h2>
                 <button
                   onClick={onClose}
@@ -63,7 +70,7 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onAdd, p
               </div>
 
               <form onSubmit={handleSubmit}>
-                <div className="mb-6">
+                <div className="mb-4">
                   <label className="block text-sm text-muted-foreground mb-2">
                     Habit Name
                   </label>
@@ -72,13 +79,32 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onAdd, p
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g., Meditate, Exercise, Read..."
-                    className="w-full bg-input border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
                     autoFocus
                   />
                 </div>
 
-                <div className="mb-6">
-                  <label className="block text-sm text-muted-foreground mb-3">
+                {/* Intent question - calm and optional */}
+                <div className="mb-4">
+                  <label className="block text-sm text-muted-foreground mb-2">
+                    Why does this matter to you?
+                    <span className="text-muted-foreground/60 ml-1">(optional)</span>
+                  </label>
+                  <textarea
+                    value={intent}
+                    onChange={(e) => setIntent(e.target.value)}
+                    placeholder="A quiet reminder for yourself..."
+                    rows={2}
+                    maxLength={200}
+                    className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm resize-none"
+                  />
+                  <p className="text-[10px] text-muted-foreground/50 mt-1">
+                    This stays private and appears only when you need a gentle reminder.
+                  </p>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm text-muted-foreground mb-2">
                     Time of Day
                   </label>
                   <div className="flex gap-2">
@@ -88,7 +114,7 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onAdd, p
                         type="button"
                         onClick={() => setTimeOfDay(option.value)}
                         className={`
-                          flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border transition-all
+                          flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg border transition-all text-sm
                           ${timeOfDay === option.value
                             ? `border-primary/50 bg-primary/10 ${option.color}`
                             : 'border-border bg-secondary text-muted-foreground hover:text-foreground'
@@ -96,7 +122,7 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onAdd, p
                         `}
                       >
                         {option.icon}
-                        <span className="text-sm font-medium">{option.label}</span>
+                        <span className="font-medium">{option.label}</span>
                       </button>
                     ))}
                   </div>
@@ -104,7 +130,7 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onAdd, p
 
                 {/* Sub-habit option */}
                 {parentHabits.length > 0 && (
-                  <div className="mb-6">
+                  <div className="mb-4">
                     <label className="flex items-center gap-3 cursor-pointer">
                       <input
                         type="checkbox"
@@ -119,14 +145,11 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onAdd, p
                     </label>
                     
                     {isSubHabit && (
-                      <div className="mt-3 pl-7">
-                        <label className="block text-xs text-muted-foreground mb-2">
-                          Parent Habit
-                        </label>
+                      <div className="mt-2 pl-7">
                         <select
                           value={parentHabitId}
                           onChange={(e) => setParentHabitId(e.target.value)}
-                          className="w-full bg-input border border-border rounded-lg px-4 py-2.5 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                          className="w-full bg-input border border-border rounded-lg px-3 py-2 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                         >
                           <option value="">Select parent habit...</option>
                           {parentHabits.map(habit => (
@@ -140,18 +163,18 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onAdd, p
                   </div>
                 )}
 
-                <div className="flex gap-3">
+                <div className="flex gap-2 pt-2">
                   <button
                     type="button"
                     onClick={onClose}
-                    className="flex-1 py-3 rounded-lg border border-border bg-secondary text-foreground hover:bg-muted transition-colors"
+                    className="flex-1 py-2.5 rounded-lg border border-border bg-secondary text-foreground hover:bg-muted transition-colors text-sm"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={!name.trim() || (isSubHabit && !parentHabitId)}
-                    className="flex-1 py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
                   >
                     Add Habit
                   </button>
