@@ -40,42 +40,26 @@ const Index: React.FC = () => {
   useEffect(() => {
     Promise.all([loadState(), Promise.resolve(loadWorldState())]).then(([appState, world]) => {
       setState(appState);
-
-      // Demo mode: Force Day 50 to show all features
-      const demoWorld = {
-        ...world,
-        insaneProgress: {
-          ...world.insaneProgress,
-          currentDay: 50,
-          targetDays: 50,
-          isExploring: true,
-          consecutiveStreak: 50,
-          flameStrength: 100,
-        },
-      };
-
-      setWorldState(demoWorld);
-      saveWorldState(demoWorld);
+      setWorldState(world);
       setIsLoading(false);
     });
   }, []);
 
-  // Demo mode enabled - skip consistency calculation to keep Day 50 visible
-  // To re-enable progress tracking, uncomment the following and remove demo mode from above
-  // useEffect(() => {
-  //   if (state?.routines) {
-  //     const consistentDays = calculateConsistencyDays(state.routines);
-  //     if (consistentDays !== worldState.insaneProgress.currentDay) {
-  //       const wasNotReached = worldState.insaneProgress.currentDay < 50;
-  //       const nowReached = consistentDays >= 50;
-  //       const newWorld = updateInsaneProgress(worldState, { currentDay: consistentDays });
-  //       setWorldState(newWorld);
-  //       if (wasNotReached && nowReached) {
-  //         setShowInsaneCelebration(true);
-  //       }
-  //     }
-  //   }
-  // }, [state?.routines]);
+  // Track progress based on actual habit completion
+  useEffect(() => {
+    if (state?.routines) {
+      const consistentDays = calculateConsistencyDays(state.routines);
+      if (consistentDays !== worldState.insaneProgress.currentDay) {
+        const wasNotReached = worldState.insaneProgress.currentDay < 50;
+        const nowReached = consistentDays >= 50;
+        const newWorld = updateInsaneProgress(worldState, { currentDay: consistentDays });
+        setWorldState(newWorld);
+        if (wasNotReached && nowReached) {
+          setShowInsaneCelebration(true);
+        }
+      }
+    }
+  }, [state?.routines]);
 
   // Keyboard shortcuts
   useEffect(() => {
