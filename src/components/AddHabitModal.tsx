@@ -1,24 +1,29 @@
 import React, { useState } from 'react';
 import { TimeOfDay } from '@/types/habit';
-import { X, Sun, Moon, Clock } from 'lucide-react';
+import { X, Sun, Moon, Clock, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface AddHabitModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (name: string, timeOfDay: TimeOfDay) => void;
+  onAdd: (name: string, timeOfDay: TimeOfDay, parentHabitId?: string) => void;
+  parentHabits?: { id: string; name: string }[];
 }
 
-const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onAdd }) => {
+const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onAdd, parentHabits = [] }) => {
   const [name, setName] = useState('');
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>('anytime');
+  const [isSubHabit, setIsSubHabit] = useState(false);
+  const [parentHabitId, setParentHabitId] = useState<string>('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
-      onAdd(name.trim(), timeOfDay);
+      onAdd(name.trim(), timeOfDay, isSubHabit && parentHabitId ? parentHabitId : undefined);
       setName('');
       setTimeOfDay('anytime');
+      setIsSubHabit(false);
+      setParentHabitId('');
       onClose();
     }
   };
@@ -97,6 +102,44 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onAdd })
                   </div>
                 </div>
 
+                {/* Sub-habit option */}
+                {parentHabits.length > 0 && (
+                  <div className="mb-6">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isSubHabit}
+                        onChange={(e) => {
+                          setIsSubHabit(e.target.checked);
+                          if (!e.target.checked) setParentHabitId('');
+                        }}
+                        className="w-4 h-4 rounded border-border bg-input text-primary focus:ring-primary/50"
+                      />
+                      <span className="text-sm text-muted-foreground">Add as sub-habit</span>
+                    </label>
+                    
+                    {isSubHabit && (
+                      <div className="mt-3 pl-7">
+                        <label className="block text-xs text-muted-foreground mb-2">
+                          Parent Habit
+                        </label>
+                        <select
+                          value={parentHabitId}
+                          onChange={(e) => setParentHabitId(e.target.value)}
+                          className="w-full bg-input border border-border rounded-lg px-4 py-2.5 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                        >
+                          <option value="">Select parent habit...</option>
+                          {parentHabits.map(habit => (
+                            <option key={habit.id} value={habit.id}>
+                              {habit.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex gap-3">
                   <button
                     type="button"
@@ -107,7 +150,7 @@ const AddHabitModal: React.FC<AddHabitModalProps> = ({ isOpen, onClose, onAdd })
                   </button>
                   <button
                     type="submit"
-                    disabled={!name.trim()}
+                    disabled={!name.trim() || (isSubHabit && !parentHabitId)}
                     className="flex-1 py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Add Habit
