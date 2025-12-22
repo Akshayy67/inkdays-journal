@@ -334,10 +334,10 @@ const SequenceGame: React.FC = () => {
   const [bestLevel, setBestLevel] = useState(0);
 
   const colors = [
-    'hsl(340, 70%, 55%)', // red
-    'hsl(140, 60%, 45%)', // green  
-    'hsl(200, 70%, 50%)', // blue
-    'hsl(45, 80%, 50%)',  // yellow
+    { bg: 'hsl(340, 70%, 55%)', glow: '340, 70%, 55%' }, // red
+    { bg: 'hsl(140, 60%, 45%)', glow: '140, 60%, 45%' }, // green  
+    { bg: 'hsl(200, 70%, 50%)', glow: '200, 70%, 50%' }, // blue
+    { bg: 'hsl(45, 80%, 50%)', glow: '45, 80%, 50%' },   // yellow
   ];
 
   const startGame = () => {
@@ -349,31 +349,38 @@ const SequenceGame: React.FC = () => {
     nextRound([]);
   };
 
-  const nextRound = (currentSequence: number[]) => {
+  const nextRound = useCallback((currentSequence: number[]) => {
     const newSequence = [...currentSequence, Math.floor(Math.random() * 4)];
     setSequence(newSequence);
     setLevel(newSequence.length);
     setPlayerSequence([]);
     
-    // Show sequence
+    // Show sequence with clear glow
     setIsShowingSequence(true);
+    
+    // Play sequence with proper timing
     newSequence.forEach((btn, index) => {
       setTimeout(() => {
         setActiveButton(btn);
-        setTimeout(() => setActiveButton(null), 300);
-      }, (index + 1) * 600);
+      }, index * 800 + 500);
+      
+      setTimeout(() => {
+        setActiveButton(null);
+      }, index * 800 + 500 + 500);
     });
     
+    // End showing sequence after all buttons have been shown
     setTimeout(() => {
       setIsShowingSequence(false);
-    }, newSequence.length * 600 + 300);
-  };
+    }, newSequence.length * 800 + 600);
+  }, []);
 
   const handleButtonClick = (index: number) => {
     if (!isPlaying || isShowingSequence) return;
 
+    // Show button press
     setActiveButton(index);
-    setTimeout(() => setActiveButton(null), 150);
+    setTimeout(() => setActiveButton(null), 200);
 
     const newPlayerSequence = [...playerSequence, index];
     setPlayerSequence(newPlayerSequence);
@@ -392,7 +399,7 @@ const SequenceGame: React.FC = () => {
 
     // Check if complete
     if (newPlayerSequence.length === sequence.length) {
-      setTimeout(() => nextRound(sequence), 800);
+      setTimeout(() => nextRound(sequence), 1000);
     }
   };
 
@@ -403,23 +410,29 @@ const SequenceGame: React.FC = () => {
         <span className="text-muted-foreground">Best: {bestLevel}</span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
-        {[0, 1, 2, 3].map((index) => (
-          <motion.button
-            key={index}
-            onClick={() => handleButtonClick(index)}
-            disabled={!isPlaying || isShowingSequence}
-            className="aspect-square rounded-xl border-2 border-border transition-all"
-            style={{
-              backgroundColor: activeButton === index 
-                ? colors[index] 
-                : `${colors[index]}40`,
-              opacity: isPlaying ? 1 : 0.5,
-            }}
-            whileHover={isPlaying && !isShowingSequence ? { scale: 1.05 } : {}}
-            whileTap={isPlaying && !isShowingSequence ? { scale: 0.95 } : {}}
-          />
-        ))}
+      <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto">
+        {[0, 1, 2, 3].map((index) => {
+          const isActive = activeButton === index;
+          return (
+            <motion.button
+              key={index}
+              onClick={() => handleButtonClick(index)}
+              disabled={!isPlaying || isShowingSequence}
+              className="aspect-square rounded-xl border-2 transition-all duration-150"
+              style={{
+                backgroundColor: isActive ? colors[index].bg : `${colors[index].bg}30`,
+                borderColor: isActive ? colors[index].bg : 'hsl(var(--border))',
+                boxShadow: isActive 
+                  ? `0 0 30px 8px hsla(${colors[index].glow}, 0.7), inset 0 0 20px hsla(${colors[index].glow}, 0.3)`
+                  : 'none',
+                opacity: isPlaying ? 1 : 0.5,
+                transform: isActive ? 'scale(1.05)' : 'scale(1)',
+              }}
+              whileHover={isPlaying && !isShowingSequence ? { scale: 1.05 } : {}}
+              whileTap={isPlaying && !isShowingSequence ? { scale: 0.95 } : {}}
+            />
+          );
+        })}
       </div>
 
       {!isPlaying && (
