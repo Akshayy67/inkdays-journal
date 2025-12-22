@@ -40,7 +40,8 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
         transition={{ duration: 2 }}
         className="w-full min-h-[800px] relative"
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/20 via-primary/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-radial from-amber-400/20 via-transparent to-transparent" />
         
         <div className="relative z-10">
           <InsaneState3D 
@@ -56,7 +57,7 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
             transition={{ delay: 1 }}
             className="text-center mt-8"
           >
-            <p className="text-muted-foreground/60 text-sm italic">
+            <p className="text-foreground/70 text-sm italic">
               This space is yours now.
             </p>
           </motion.div>
@@ -100,12 +101,18 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
       animate={{ opacity: 1 }}
       className="w-full min-h-[700px] relative"
     >
+      {/* Brighter ambient glow */}
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/15 via-amber-500/10 to-transparent pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-gradient-radial from-primary/25 via-amber-400/15 to-transparent blur-3xl pointer-events-none" />
+      
       {/* 3D Journey Visualization */}
-      <InsaneState3D 
-        evolutionTier={evolutionTier} 
-        visualProgress={visualProgress} 
-        hasReached={false} 
-      />
+      <div className="relative z-10">
+        <InsaneState3D 
+          evolutionTier={evolutionTier} 
+          visualProgress={visualProgress} 
+          hasReached={false} 
+        />
+      </div>
       
       {/* Journey insights - no numbers, just feelings */}
       {journeyInsight && (
@@ -113,9 +120,9 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="text-center mt-6"
+          className="text-center mt-6 relative z-10"
         >
-          <p className="text-muted-foreground/50 text-sm italic">
+          <p className="text-foreground/60 text-sm italic">
             {journeyInsight}
           </p>
         </motion.div>

@@ -26,26 +26,29 @@ const WorldNavigator: React.FC<WorldNavigatorProps> = ({
   insaneReached,
 }) => {
   const getAvailableDirections = () => {
-    const directions: { zone: ZoneType; direction: 'up' | 'down' | 'left' }[] = [];
+    const directions: { zone: ZoneType; direction: 'up' | 'down' | 'left'; highlight?: boolean }[] = [];
     
     switch (currentZone) {
       case 'center':
         directions.push({ zone: 'review', direction: 'up' });
+        directions.push({ zone: 'insane', direction: 'up', highlight: true });
+        directions.push({ zone: 'focus', direction: 'up' });
         directions.push({ zone: 'journal', direction: 'left' });
         directions.push({ zone: 'recovery', direction: 'down' });
         break;
       case 'review':
         directions.push({ zone: 'center', direction: 'down' });
-        directions.push({ zone: 'insane', direction: 'up' });
+        directions.push({ zone: 'insane', direction: 'up', highlight: true });
+        directions.push({ zone: 'focus', direction: 'up' });
         break;
       case 'insane':
         directions.push({ zone: 'review', direction: 'down' });
-        if (canAccessFocus || insaneReached) {
-          directions.push({ zone: 'focus', direction: 'up' });
-        }
+        directions.push({ zone: 'focus', direction: 'up' });
+        directions.push({ zone: 'center', direction: 'down' });
         break;
       case 'focus':
         directions.push({ zone: 'insane', direction: 'down' });
+        directions.push({ zone: 'center', direction: 'down' });
         break;
       case 'journal':
         directions.push({ zone: 'center', direction: 'down' });
@@ -84,20 +87,36 @@ const WorldNavigator: React.FC<WorldNavigatorProps> = ({
       </div>
 
       {/* Navigation hints */}
-      <div className="space-y-2">
-        {directions.map(({ zone, direction }) => {
+      <div className="space-y-2 max-h-[300px] overflow-y-auto">
+        {directions.map(({ zone, direction, highlight }) => {
           const ZoneIcon = zoneInfo[zone].icon;
+          const isSpecial = zone === 'insane' || zone === 'focus';
           return (
             <motion.button
               key={zone}
               onClick={() => onNavigate(zone)}
               whileHover={{ scale: 1.02, x: direction === 'left' ? -4 : 0, y: direction === 'up' ? -4 : direction === 'down' ? 4 : 0 }}
               whileTap={{ scale: 0.98 }}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground transition-all text-sm group"
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm group w-full ${
+                isSpecial 
+                  ? 'bg-primary/15 hover:bg-primary/25 text-primary border border-primary/20' 
+                  : 'bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground'
+              }`}
             >
               <DirectionIcon direction={direction} />
-              <ZoneIcon className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100" />
-              <span className="opacity-70 group-hover:opacity-100">{zoneInfo[zone].label}</span>
+              <ZoneIcon className={`w-3.5 h-3.5 ${isSpecial ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`} />
+              <span className={isSpecial ? 'opacity-100 font-medium' : 'opacity-70 group-hover:opacity-100'}>
+                {zoneInfo[zone].label}
+              </span>
+              {highlight && (
+                <motion.span 
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="ml-auto text-[10px] text-primary/60"
+                >
+                  ✦
+                </motion.span>
+              )}
             </motion.button>
           );
         })}
