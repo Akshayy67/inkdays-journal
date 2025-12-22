@@ -13,7 +13,7 @@ export interface CellData {
   timeOfDay?: TimeOfDay;
 }
 
-export interface Habit {
+export interface SubHabit {
   id: string;
   name: string;
   timeOfDay: TimeOfDay;
@@ -21,6 +21,29 @@ export interface Habit {
   cells: Record<string, CellData>; // key = date string (YYYY-MM-DD)
 }
 
+export interface Habit {
+  id: string;
+  name: string;
+  timeOfDay: TimeOfDay;
+  createdAt: number;
+  cells: Record<string, CellData>; // key = date string (YYYY-MM-DD)
+  subHabits?: SubHabit[];
+  isExpanded?: boolean;
+}
+
+export type RoutineDuration = 30 | 60 | 90 | 'custom';
+
+export interface Routine {
+  id: string;
+  name: string;
+  startDate: string; // YYYY-MM-DD
+  duration: number; // days
+  habits: Habit[];
+  position: { x: number; y: number };
+  createdAt: number;
+}
+
+// Legacy type for backward compatibility
 export interface HabitGrid {
   id: string;
   habits: Habit[];
@@ -38,8 +61,10 @@ export interface AppSettings {
 }
 
 export interface AppState {
-  grids: HabitGrid[];
+  grids: HabitGrid[]; // Legacy - kept for backward compatibility
+  routines: Routine[];
   settings: AppSettings;
+  activeRoutineId?: string;
 }
 
 export interface HabitStats {
@@ -48,6 +73,15 @@ export interface HabitStats {
   longestStreak: number;
   currentStreak: number;
   totalCompletions: number;
+}
+
+export interface RoutineStats {
+  overallConsistency: number;
+  averageCompletionStrength: number;
+  momentum: 'improving' | 'stable' | 'declining';
+  totalHabits: number;
+  daysElapsed: number;
+  daysRemaining: number;
 }
 
 export interface OverallStats {

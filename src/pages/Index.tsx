@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { AppState, TimeOfDay, Stroke } from '@/types/habit';
-import { loadState, saveState, addHabit, deleteHabit, updateSettings } from '@/lib/storage';
+import { AppState, TimeOfDay, Stroke, Routine } from '@/types/habit';
+import { loadState, saveState, addHabit, deleteHabit, updateSettings, addRoutine, deleteRoutine, toggleHabitExpanded, setActiveRoutine } from '@/lib/storage';
 import { getDateKey } from '@/lib/habitUtils';
 import InfiniteCanvas from '@/components/InfiniteCanvas';
 import HabitGridComponent from '@/components/HabitGrid';
 import Toolbar from '@/components/Toolbar';
 import AddHabitModal from '@/components/AddHabitModal';
+import AddRoutineModal from '@/components/AddRoutineModal';
 import AnalyticsPanel from '@/components/AnalyticsPanel';
 import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
@@ -15,7 +16,10 @@ const Index: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isErasing, setIsErasing] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showAddRoutineModal, setShowAddRoutineModal] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
+
+  const activeRoutine = state?.routines.find(r => r.id === state.activeRoutineId) || state?.routines[0];
 
   useEffect(() => {
     loadState().then(loadedState => {
@@ -24,10 +28,9 @@ const Index: React.FC = () => {
     });
   }, []);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (showAddModal) return;
+      if (showAddModal || showAddRoutineModal) return;
       
       switch (e.key.toLowerCase()) {
         case 'a':
@@ -41,8 +44,8 @@ const Index: React.FC = () => {
         case 'd':
           setShowAnalytics(prev => !prev);
           break;
-        case 's':
-          // Settings handled in toolbar
+        case 'r':
+          setShowAddRoutineModal(true);
           break;
         case '+':
         case '=':
@@ -56,21 +59,36 @@ const Index: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showAddModal, state?.settings.noUndoMode]);
+  }, [showAddModal, showAddRoutineModal, state?.settings.noUndoMode]);
 
   const handleCellUpdate = useCallback(async (
     habitId: string,
     dateKey: string,
     strokes: Stroke[],
-    density: number
+    density: number,
+    subHabitId?: string
   ) => {
-    if (!state) return;
+    if (!state || !activeRoutine) return;
 
     const newState = { ...state };
-    const grid = newState.grids[0];
-    const habit = grid.habits.find(h => h.id === habitId);
-    
-    if (habit) {
+    const routine = newState.routines.find(r => r.id === activeRoutine.id);
+    if (!routine) return;
+
+    const habit = routine.habits.find(h => h.id === habitId);
+    if (!habit) return;
+
+    if (subHabitId) {
+      const subHabit = habit.subHabits?.find(sh => sh.id === subHabitId);
+      if (subHabit) {
+        subHabit.cells[dateKey] = {
+          strokes,
+          completed: strokes.length > 0,
+          strokeDensity: density,
+          completedAt: strokes.length > 0 ? Date.now() : undefined,
+          timeOfDay: subHabit.timeOfDay,
+        };
+      }
+    } else {
       habit.cells[dateKey] = {
         strokes,
         completed: strokes.length > 0,
@@ -78,27 +96,57 @@ const Index: React.FC = () => {
         completedAt: strokes.length > 0 ? Date.now() : undefined,
         timeOfDay: habit.timeOfDay,
       };
-      
-      await saveState(newState);
-      setState(newState);
     }
-  }, [state]);
-
-  const handleAddHabit = useCallback(async (name: string, timeOfDay: TimeOfDay) => {
-    if (!state) return;
     
-    const newState = await addHabit(state, state.grids[0].id, { name, timeOfDay });
+    await saveState(newState);
     setState(newState);
-    toast.success(`Added habit: ${name}`);
-  }, [state]);
+  }, [state, activeRoutine]);
+
+  const handleAddHabit = useCallback(async (name: string, timeOfDay: TimeOfDay, parentHabitId?: string) => {
+    if (!state || !activeRoutine) return;
+    
+    const newState = await addHabit(state, activeRoutine.id, { name, timeOfDay }, parentHabitId);
+    setState(newState);
+    toast.success(parentHabitId ? `Added sub-habit: ${name}` : `Added habit: ${name}`);
+  }, [state, activeRoutine]);
 
   const handleDeleteHabit = useCallback(async (habitId: string) => {
-    if (!state) return;
+    if (!state || !activeRoutine) return;
     
-    const habit = state.grids[0].habits.find(h => h.id === habitId);
-    const newState = await deleteHabit(state, state.grids[0].id, habitId);
+    const habit = activeRoutine.habits.find(h => h.id === habitId);
+    const newState = await deleteHabit(state, activeRoutine.id, habitId);
     setState(newState);
     toast.success(`Removed habit: ${habit?.name || 'Habit'}`);
+  }, [state, activeRoutine]);
+
+  const handleDeleteSubHabit = useCallback(async (habitId: string, subHabitId: string) => {
+    if (!state || !activeRoutine) return;
+    
+    const newState = await deleteHabit(state, activeRoutine.id, habitId, subHabitId);
+    setState(newState);
+    toast.success('Removed sub-habit');
+  }, [state, activeRoutine]);
+
+  const handleToggleExpanded = useCallback(async (habitId: string) => {
+    if (!state || !activeRoutine) return;
+    
+    const newState = await toggleHabitExpanded(state, activeRoutine.id, habitId);
+    setState(newState);
+  }, [state, activeRoutine]);
+
+  const handleAddRoutine = useCallback(async (name: string, duration: number, startDate: string) => {
+    if (!state) return;
+    
+    const newState = await addRoutine(state, { name, duration, startDate, position: { x: 100, y: 100 } });
+    setState(newState);
+    toast.success(`Created routine: ${name}`);
+  }, [state]);
+
+  const handleSwitchRoutine = useCallback(async (routineId: string) => {
+    if (!state) return;
+    
+    const newState = await setActiveRoutine(state, routineId);
+    setState(newState);
   }, [state]);
 
   const handleUpdateSettings = useCallback(async (settings: Partial<typeof state.settings>) => {
@@ -159,7 +207,6 @@ const Index: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-canvas overflow-hidden">
-      {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-40 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -169,34 +216,53 @@ const Index: React.FC = () => {
             </span>
           </div>
           
-          {!state.settings.silentMode && state.grids[0].habits.length > 0 && (
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span>{state.grids[0].habits.length} habits</span>
-            </div>
-          )}
+          {/* Routine tabs */}
+          <div className="flex items-center gap-2">
+            {state.routines.map(routine => (
+              <button
+                key={routine.id}
+                onClick={() => handleSwitchRoutine(routine.id)}
+                className={`
+                  px-3 py-1.5 text-xs rounded-lg transition-all
+                  ${routine.id === activeRoutine?.id
+                    ? 'bg-primary/20 text-primary border border-primary/30'
+                    : 'bg-secondary text-muted-foreground hover:text-foreground border border-transparent'
+                  }
+                `}
+              >
+                {routine.name}
+              </button>
+            ))}
+            <button
+              onClick={() => setShowAddRoutineModal(true)}
+              className="px-2 py-1.5 text-xs rounded-lg bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+            >
+              + New
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Infinite Canvas */}
       <InfiniteCanvas
         settings={state.settings}
         onPanChange={handlePanChange}
         onZoomChange={(zoom) => handleUpdateSettings({ zoom })}
       >
         <div id="habit-grid-container" className="p-8" style={{ minWidth: '800px' }}>
-          <HabitGridComponent
-            habits={state.grids[0].habits}
-            startDate={state.grids[0].startDate}
-            daysVisible={state.grids[0].daysVisible}
-            settings={state.settings}
-            isErasing={isErasing}
-            onCellUpdate={handleCellUpdate}
-            onDeleteHabit={handleDeleteHabit}
-          />
+          {activeRoutine && (
+            <HabitGridComponent
+              routine={activeRoutine}
+              settings={state.settings}
+              isErasing={isErasing}
+              onCellUpdate={handleCellUpdate}
+              onDeleteHabit={handleDeleteHabit}
+              onDeleteSubHabit={handleDeleteSubHabit}
+              onToggleExpanded={handleToggleExpanded}
+            />
+          )}
         </div>
       </InfiniteCanvas>
 
-      {/* Toolbar */}
       <Toolbar
         settings={state.settings}
         isErasing={isErasing}
@@ -209,28 +275,32 @@ const Index: React.FC = () => {
         onExport={handleExport}
       />
 
-      {/* Add Habit Modal */}
       <AddHabitModal
         isOpen={showAddModal}
         onClose={() => setShowAddModal(false)}
         onAdd={handleAddHabit}
+        parentHabits={activeRoutine?.habits.map(h => ({ id: h.id, name: h.name })) || []}
       />
 
-      {/* Analytics Panel */}
+      <AddRoutineModal
+        isOpen={showAddRoutineModal}
+        onClose={() => setShowAddRoutineModal(false)}
+        onAdd={handleAddRoutine}
+      />
+
       <AnalyticsPanel
         isOpen={showAnalytics}
         onClose={() => setShowAnalytics(false)}
-        habits={state.grids[0].habits}
+        routine={activeRoutine}
         settings={state.settings}
       />
 
-      {/* Keyboard shortcuts hint */}
       <div className="fixed bottom-6 right-6 z-40">
         <div className="text-xs text-muted-foreground space-y-1 text-right opacity-50 hover:opacity-100 transition-opacity">
           <p><kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs">A</kbd> Add habit</p>
+          <p><kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs">R</kbd> New routine</p>
           <p><kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs">E</kbd> Toggle eraser</p>
           <p><kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs">D</kbd> Dashboard</p>
-          <p><kbd className="px-1.5 py-0.5 bg-secondary rounded text-xs">+/-</kbd> Zoom</p>
         </div>
       </div>
     </div>
