@@ -56,7 +56,7 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
             transition={{ delay: 1 }}
             className="text-center mt-8"
           >
-            <p className="text-muted-foreground/60 text-sm italic">
+            <p className="text-muted-foreground dark:text-muted-foreground/60 text-sm italic">
               This space is yours now.
             </p>
           </motion.div>
@@ -85,7 +85,7 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
           animate={{ opacity: 1 }}
           transition={{ delay: 2 }}
           onClick={onExplore}
-          className="mt-8 px-6 py-3 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/20 text-foreground/80 transition-all"
+          className="mt-8 px-6 py-3 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/20 text-foreground transition-all"
         >
           Enter
         </motion.button>
@@ -115,7 +115,7 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
           transition={{ delay: 0.5 }}
           className="text-center mt-6"
         >
-          <p className="text-muted-foreground/50 text-sm italic">
+          <p className="text-muted-foreground dark:text-muted-foreground/50 text-sm italic">
             {journeyInsight}
           </p>
         </motion.div>
@@ -132,7 +132,7 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
           <div className="flex items-center justify-between gap-4">
             {/* Journey stages - no numbers */}
             <div className="flex items-center gap-3">
-              <span className="text-xs text-muted-foreground/60">Beginning</span>
+              <span className="text-xs text-muted-foreground dark:text-muted-foreground/60">Beginning</span>
               <div className="flex gap-1">
                 {[...Array(5)].map((_, i) => (
                   <motion.div
@@ -154,7 +154,7 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
                   />
                 ))}
               </div>
-              <span className="text-xs text-muted-foreground/60">Destination</span>
+              <span className="text-xs text-muted-foreground dark:text-muted-foreground/60">Destination</span>
             </div>
 
             {/* Current state indicator */}
@@ -166,7 +166,7 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
                   boxShadow: `0 0 10px hsl(${175 - evolutionTier * 0.8}, ${40 + evolutionTier * 0.4}%, 50% / 0.5)`,
                 }}
               />
-              <span className="text-xs text-muted-foreground/50">You are here</span>
+              <span className="text-xs text-muted-foreground dark:text-muted-foreground/50">You are here</span>
             </div>
           </div>
 
@@ -189,7 +189,7 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
                   }`}
                 >
                   <p className={`text-[10px] ${
-                    isActive ? 'text-muted-foreground' : 'text-muted-foreground/30'
+                    isActive ? 'text-foreground dark:text-muted-foreground' : 'text-muted-foreground/50 dark:text-muted-foreground/30'
                   }`}>
                     {phase}
                   </p>
