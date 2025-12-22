@@ -2,7 +2,7 @@ import React from 'react';
 import { Habit, SubHabit, CellData, AppSettings, Routine } from '@/types/habit';
 import { getDatesInRange, isMissedDay, getDateKey, getDayNumber, formatShortDate, calculateParentCompletionStrength } from '@/lib/habitUtils';
 import DrawingCell from './DrawingCell';
-import { Trash2, Sun, Moon, Clock, ChevronDown, ChevronRight, Plus } from 'lucide-react';
+import { Trash2, Sun, Moon, Clock, ChevronDown, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SubHabitRowProps {
@@ -51,7 +51,7 @@ const SubHabitRow: React.FC<SubHabitRowProps> = ({
         <span className="text-xs text-muted-foreground truncate">{subHabit.name}</span>
       </div>
       
-      <div className="flex gap-1">
+      <div className="flex gap-1 flex-shrink-0">
         {dates.map(dateKey => {
           const cell = subHabit.cells[dateKey];
           const isPressured = settings.pressureMode && isMissedDay(dateKey, cell);
@@ -61,7 +61,7 @@ const SubHabitRow: React.FC<SubHabitRowProps> = ({
             <div
               key={dateKey}
               className={`
-                w-10 h-10 rounded-sm border transition-all duration-200
+                w-10 h-10 flex-shrink-0 rounded-sm border transition-all duration-200
                 ${cell?.completed 
                   ? 'border-primary/20 bg-cell-completed/80' 
                   : isPressured 
@@ -162,7 +162,7 @@ const HabitRow: React.FC<HabitRowProps> = ({
           <span className="text-sm text-foreground truncate font-medium">{habit.name}</span>
         </div>
         
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-shrink-0">
           {dates.map(dateKey => {
             const cell = habit.cells[dateKey];
             const isPressured = settings.pressureMode && isMissedDay(dateKey, cell);
@@ -176,7 +176,7 @@ const HabitRow: React.FC<HabitRowProps> = ({
               <div
                 key={dateKey}
                 className={`
-                  w-12 h-12 rounded-sm border transition-all duration-200 relative
+                  w-12 h-12 flex-shrink-0 rounded-sm border transition-all duration-200 relative
                   ${cell?.completed 
                     ? 'border-primary/30 bg-cell-completed' 
                     : isPressured 
@@ -263,65 +263,70 @@ const HabitGridComponent: React.FC<HabitGridProps> = ({
         </p>
       </div>
       
-      {/* Header with day labels */}
-      <div className="flex items-end gap-2 mb-3">
-        <div className="w-32 flex-shrink-0" />
-        <div className="flex gap-1">
-          {dates.map(dateKey => {
-            const dayNum = getDayNumber(dateKey, routine.startDate);
-            const isToday = dateKey === today;
-            const isFuture = dateKey > today;
-            
-            return (
-              <div
-                key={dateKey}
-                className={`
-                  w-12 flex flex-col items-center justify-center
-                  ${isFuture ? 'opacity-40' : ''}
-                `}
-              >
-                {/* Day number - primary */}
-                <span className={`
-                  text-sm font-bold
-                  ${isToday ? 'text-primary' : 'text-foreground'}
-                `}>
-                  {dayNum}
-                </span>
-                {/* Calendar date - secondary/muted */}
-                <span className={`
-                  text-[10px] leading-tight
-                  ${isToday ? 'text-primary/70' : 'text-muted-foreground/60'}
-                `}>
-                  {formatShortDate(dateKey)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Habit rows */}
-      <div className="flex flex-col gap-2 group">
-        {routine.habits.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8">
-            <p className="text-sm">No habits yet.</p>
-            <p className="text-xs mt-1">Add your first habit to start tracking.</p>
+      {/* Scrollable content area */}
+      <div className="overflow-x-auto pb-2">
+        <div className="inline-block min-w-max">
+          {/* Header with day labels */}
+          <div className="flex items-end gap-2 mb-3">
+            <div className="w-32 flex-shrink-0" />
+            <div className="flex gap-1">
+              {dates.map(dateKey => {
+                const dayNum = getDayNumber(dateKey, routine.startDate);
+                const isToday = dateKey === today;
+                const isFuture = dateKey > today;
+                
+                return (
+                  <div
+                    key={dateKey}
+                    className={`
+                      w-12 flex-shrink-0 flex flex-col items-center justify-center
+                      ${isFuture ? 'opacity-40' : ''}
+                    `}
+                  >
+                    {/* Day number - primary */}
+                    <span className={`
+                      text-sm font-bold
+                      ${isToday ? 'text-primary' : 'text-foreground'}
+                    `}>
+                      {dayNum}
+                    </span>
+                    {/* Calendar date - secondary/muted */}
+                    <span className={`
+                      text-[10px] leading-tight whitespace-nowrap
+                      ${isToday ? 'text-primary/70' : 'text-muted-foreground/60'}
+                    `}>
+                      {formatShortDate(dateKey)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        ) : (
-          routine.habits.map(habit => (
-            <HabitRow
-              key={habit.id}
-              habit={habit}
-              dates={dates}
-              settings={settings}
-              isErasing={isErasing}
-              onCellUpdate={onCellUpdate}
-              onDeleteHabit={onDeleteHabit}
-              onDeleteSubHabit={onDeleteSubHabit}
-              onToggleExpanded={onToggleExpanded}
-            />
-          ))
-        )}
+
+          {/* Habit rows */}
+          <div className="flex flex-col gap-2 group">
+            {routine.habits.length === 0 ? (
+              <div className="text-center text-muted-foreground py-8">
+                <p className="text-sm">No habits yet.</p>
+                <p className="text-xs mt-1">Add your first habit to start tracking.</p>
+              </div>
+            ) : (
+              routine.habits.map(habit => (
+                <HabitRow
+                  key={habit.id}
+                  habit={habit}
+                  dates={dates}
+                  settings={settings}
+                  isErasing={isErasing}
+                  onCellUpdate={onCellUpdate}
+                  onDeleteHabit={onDeleteHabit}
+                  onDeleteSubHabit={onDeleteSubHabit}
+                  onToggleExpanded={onToggleExpanded}
+                />
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
