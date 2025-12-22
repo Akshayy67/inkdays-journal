@@ -17,7 +17,7 @@ const WorldMap: React.FC<WorldMapProps> = ({
   onNavigate,
 }) => {
   const evolutionTier = Math.floor(insaneProgress / 10);
-  const hasReached = insaneProgress >= 500;
+  const hasReached = insaneProgress >= 50;
   
   // Glow intensity based on progress
   const insaneGlow = Math.min(evolutionTier * 2, 100);

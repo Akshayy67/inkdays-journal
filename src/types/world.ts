@@ -22,7 +22,7 @@ export interface JournalState {
 
 export interface InsaneStateProgress {
   currentDay: number;
-  targetDays: number; // 500
+  targetDays: number; // 50
   reachedAt?: number;
   isExploring: boolean;
 }
@@ -57,7 +57,7 @@ export const defaultWorldState: WorldState = {
   },
   insaneProgress: {
     currentDay: 0,
-    targetDays: 500,
+    targetDays: 50,
     isExploring: false,
   },
   visitedZones: ['center'],
