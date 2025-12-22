@@ -41,21 +41,21 @@ const Index: React.FC = () => {
     Promise.all([loadState(), Promise.resolve(loadWorldState())]).then(([appState, world]) => {
       setState(appState);
 
-      // Migrate older saves that used 500 days -> 50 days
-      const migratedWorld =
-        world.insaneProgress?.targetDays && world.insaneProgress.targetDays !== 50
-          ? {
-              ...world,
-              insaneProgress: {
-                ...world.insaneProgress,
-                targetDays: 50,
-              },
-            }
-          : world;
+      // Demo mode: Force Day 50 to show all features
+      const demoWorld = {
+        ...world,
+        insaneProgress: {
+          ...world.insaneProgress,
+          currentDay: 50,
+          targetDays: 50,
+          isExploring: true,
+          consecutiveStreak: 50,
+          flameStrength: 100,
+        },
+      };
 
-      setWorldState(migratedWorld);
-      if (migratedWorld !== world) saveWorldState(migratedWorld);
-
+      setWorldState(demoWorld);
+      saveWorldState(demoWorld);
       setIsLoading(false);
     });
   }, []);
