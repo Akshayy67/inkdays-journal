@@ -17,6 +17,8 @@ export const loadWorldState = (): WorldState => {
         insaneProgress: {
           ...defaultWorldState.insaneProgress,
           ...state.insaneProgress,
+          // Force the new 50-day target (migrates older saves that had 500)
+          targetDays: defaultWorldState.insaneProgress.targetDays,
           unlocks: {
             ...defaultMilestoneUnlocks,
             ...state.insaneProgress?.unlocks,
