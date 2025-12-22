@@ -43,51 +43,49 @@ const WorldNavigator: React.FC<WorldNavigatorProps> = ({
         break;
       case 'review':
         directions.push({ zone: 'center', direction: 'down' });
-        directions.push({ zone: 'insane', direction: 'up' });
-        directions.push({ zone: 'milestones', direction: 'right' });
         break;
       case 'insane':
-        directions.push({ zone: 'review', direction: 'down' });
-        if (canAccessFocus || insaneReached) {
-          directions.push({ zone: 'focus', direction: 'up' });
-        }
-        if (insaneReached) {
-          directions.push({ zone: 'zen-garden', direction: 'up' });
-        }
+        directions.push({ zone: 'center', direction: 'down' });
         break;
       case 'focus':
-        directions.push({ zone: 'insane', direction: 'down' });
-        if (insaneReached) {
-          directions.push({ zone: 'zen-garden', direction: 'up' });
-        }
+        directions.push({ zone: 'center', direction: 'down' });
         break;
       case 'zen-garden':
-        directions.push({ zone: 'focus', direction: 'down' });
+        directions.push({ zone: 'center', direction: 'down' });
         break;
       case 'journal':
         directions.push({ zone: 'center', direction: 'right' });
         break;
       case 'recovery':
         directions.push({ zone: 'center', direction: 'up' });
-        directions.push({ zone: 'flame-shrine', direction: 'right' });
         break;
       case 'milestones':
-        directions.push({ zone: 'review', direction: 'left' });
-        directions.push({ zone: 'time-capsules', direction: 'down' });
+        directions.push({ zone: 'center', direction: 'down' });
         break;
       case 'time-capsules':
         directions.push({ zone: 'center', direction: 'left' });
-        directions.push({ zone: 'milestones', direction: 'up' });
-        directions.push({ zone: 'flame-shrine', direction: 'down' });
         break;
       case 'flame-shrine':
-        directions.push({ zone: 'time-capsules', direction: 'up' });
-        directions.push({ zone: 'recovery', direction: 'left' });
+        directions.push({ zone: 'center', direction: 'up' });
         break;
     }
     
     return directions;
   };
+
+  // All zones that should appear in "Others" menu
+  const otherZones: ZoneType[] = [
+    'insane',
+    'focus', 
+    'zen-garden',
+    'milestones', 
+    'time-capsules', 
+    'flame-shrine'
+  ].filter(zone => {
+    // Filter based on access
+    if (zone === 'zen-garden' && !insaneReached) return false;
+    return true;
+  }) as ZoneType[];
 
   const DirectionIcon = ({ direction }: { direction: 'up' | 'down' | 'left' | 'right' }) => {
     switch (direction) {
@@ -100,8 +98,6 @@ const WorldNavigator: React.FC<WorldNavigatorProps> = ({
 
   const directions = getAvailableDirections();
   const CurrentIcon = zoneInfo[currentZone].icon;
-
-  const otherZones: ZoneType[] = ['milestones', 'time-capsules', 'flame-shrine'];
 
   return (
     <motion.div 
