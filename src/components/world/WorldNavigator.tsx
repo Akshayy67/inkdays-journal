@@ -1,7 +1,7 @@
 import React from 'react';
 import { ZoneType, ZONE_POSITIONS } from '@/types/world';
 import { motion } from 'framer-motion';
-import { ChevronUp, ChevronDown, ChevronLeft, BookOpen, Mountain, Compass, Heart, Sparkles } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronLeft, BookOpen, Mountain, Compass, Heart, Sparkles, Flower2 } from 'lucide-react';
 
 interface WorldNavigatorProps {
   currentZone: ZoneType;
@@ -17,6 +17,7 @@ const zoneInfo: Record<ZoneType, { icon: React.ComponentType<any>; label: string
   focus: { icon: Sparkles, label: 'Focus Zone' },
   journal: { icon: BookOpen, label: 'Journal World' },
   recovery: { icon: Heart, label: 'Recovery' },
+  'zen-garden': { icon: Flower2, label: 'Zen Garden' },
 };
 
 const WorldNavigator: React.FC<WorldNavigatorProps> = ({
