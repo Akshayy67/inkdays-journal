@@ -182,48 +182,6 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
         }}
       />
 
-      {/* Navigation buttons on left side */}
-      <motion.div 
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5 }}
-        className="fixed left-4 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3"
-      >
-        {/* Focus Zone button */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigateToZone('focus')}
-          className="flex items-center gap-2 bg-background/80 backdrop-blur-sm border-primary/30 hover:border-primary hover:bg-primary/10 text-foreground"
-        >
-          <Focus className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium">Focus Zone</span>
-          <ChevronUp className="w-3 h-3 text-muted-foreground" />
-        </Button>
-        
-        {/* Insane State button */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigateToZone('insane')}
-          className="flex items-center gap-2 bg-background/80 backdrop-blur-sm border-amber-500/30 hover:border-amber-500 hover:bg-amber-500/10 text-foreground"
-        >
-          <Zap className="w-4 h-4 text-amber-500" />
-          <span className="text-sm font-medium">Insane State</span>
-          <ChevronUp className="w-3 h-3 text-muted-foreground" />
-        </Button>
-        
-        {/* Subtle hint text */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.6 }}
-          transition={{ duration: 1, delay: 1 }}
-          className="text-xs text-muted-foreground text-center mt-2"
-        >
-          ↑ explore above
-        </motion.p>
-      </motion.div>
-
       {/* World content */}
       <div
         className="relative"
