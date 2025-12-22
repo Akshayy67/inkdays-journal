@@ -6,7 +6,7 @@ import { loadWorldState, saveWorldState, updateJournalState, updateInsaneProgres
 import { getDateKey, getDatesInRange } from '@/lib/habitUtils';
 import SpatialCanvas from '@/components/world/SpatialCanvas';
 import WorldNavigator from '@/components/world/WorldNavigator';
-
+import continuumHeader from '@/assets/continuum-header.png';
 import ReviewIsland from '@/components/world/ReviewIsland';
 import InsaneState from '@/components/world/InsaneState';
 import FocusZone from '@/components/world/FocusZone';
@@ -264,13 +264,15 @@ const Index: React.FC = () => {
       <header className="fixed top-0 left-0 right-0 z-40 p-4 pointer-events-none">
         <div className="flex items-center justify-between pointer-events-auto">
           <div className="flex items-center gap-3">
-            <h1 className={`text-xl font-bold tracking-tight transition-all ${hasReachedInsane ? 'text-primary' : 'text-foreground'}`}>CONTINUUM</h1>
-            {hasReachedInsane ? (
+            <img 
+              src={continuumHeader} 
+              alt="CONTINUUM - Spatial Habit Tracker" 
+              className={`h-10 w-auto object-contain transition-all ${hasReachedInsane ? 'drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]' : ''}`}
+            />
+            {hasReachedInsane && (
               <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 animate-pulse">
                 ⚡ INSANE
               </span>
-            ) : (
-              <span className="text-xs text-muted-foreground px-2 py-1 bg-secondary/80 rounded-full">Spatial World</span>
             )}
           </div>
           <div className="flex items-center gap-2">
