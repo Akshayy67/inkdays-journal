@@ -180,6 +180,49 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
         }}
       />
 
+      {/* Subtle upward hint - a gentle glow suggesting something above */}
+      {worldState.currentZone === 'center' && (
+        <div className="fixed top-0 left-1/2 -translate-x-1/2 pointer-events-none z-10">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 2, delay: 3 }}
+            className="flex flex-col items-center"
+          >
+            {/* Subtle upward beam */}
+            <div 
+              className="w-px h-16 opacity-20"
+              style={{
+                background: 'linear-gradient(to top, hsl(var(--primary) / 0.3), transparent)',
+              }}
+            />
+            {/* Small pulsing dot */}
+            <motion.div
+              animate={{ 
+                opacity: [0.2, 0.5, 0.2],
+                scale: [1, 1.2, 1],
+              }}
+              transition={{ 
+                duration: 3, 
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="w-1.5 h-1.5 rounded-full mt-1"
+              style={{ backgroundColor: 'hsl(var(--primary) / 0.4)' }}
+            />
+            {/* Whisper text that fades in very slowly */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.3 }}
+              transition={{ duration: 4, delay: 8 }}
+              className="text-[10px] text-muted-foreground/40 mt-2 tracking-widest uppercase"
+            >
+              ↑
+            </motion.p>
+          </motion.div>
+        </div>
+      )}
+
       {/* World content */}
       <div
         className="relative"
