@@ -272,19 +272,31 @@ const Index: React.FC = () => {
     return new Date() > endDate;
   })();
 
+  const hasReachedInsane = worldState.insaneProgress.currentDay >= 50;
+
   return (
-    <div className="min-h-screen bg-canvas overflow-hidden">
+    <div className={`min-h-screen overflow-hidden transition-all duration-1000 ${hasReachedInsane ? 'bg-gradient-to-br from-canvas via-canvas to-primary/5' : 'bg-canvas'}`}>
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-40 p-4 pointer-events-none">
         <div className="flex items-center justify-between pointer-events-auto">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold text-foreground tracking-tight">InkDays</h1>
-            <span className="text-xs text-muted-foreground px-2 py-1 bg-secondary/80 rounded-full">Spatial World</span>
+            <h1 className={`text-xl font-bold tracking-tight transition-all ${hasReachedInsane ? 'text-primary' : 'text-foreground'}`}>InkDays</h1>
+            {hasReachedInsane ? (
+              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 animate-pulse">
+                ⚡ INSANE
+              </span>
+            ) : (
+              <span className="text-xs text-muted-foreground px-2 py-1 bg-secondary/80 rounded-full">Spatial World</span>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {state.routines.map(routine => (
               <button key={routine.id} onClick={() => handleSwitchRoutine(routine.id)}
-                className={`px-3 py-1.5 text-xs rounded-lg transition-all ${routine.id === activeRoutine?.id ? 'bg-primary/20 text-primary border border-primary/30' : 'bg-secondary text-muted-foreground hover:text-foreground border border-transparent'}`}>
+                className={`px-3 py-1.5 text-xs rounded-lg transition-all ${routine.id === activeRoutine?.id 
+                  ? hasReachedInsane 
+                    ? 'bg-primary/30 text-primary border border-primary/40 shadow-lg shadow-primary/20' 
+                    : 'bg-primary/20 text-primary border border-primary/30' 
+                  : 'bg-secondary text-muted-foreground hover:text-foreground border border-transparent'}`}>
                 {routine.name}
               </button>
             ))}
