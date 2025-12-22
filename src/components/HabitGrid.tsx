@@ -61,12 +61,12 @@ const SubHabitRow: React.FC<SubHabitRowProps> = ({
             <div
               key={dateKey}
               className={`
-                w-10 h-10 flex-shrink-0 rounded-sm border transition-all duration-200
+                w-10 h-10 flex-shrink-0 rounded-sm border-2 transition-all duration-200
                 ${cell?.completed 
-                  ? 'border-primary/20 bg-cell-completed/80' 
+                  ? 'border-primary/50 bg-cell-completed' 
                   : isPressured 
-                    ? 'border-destructive/20 bg-cell-pressure/80' 
-                    : 'border-border/20 bg-cell-empty/80'
+                    ? 'border-destructive/40 bg-cell-pressure' 
+                    : 'border-border bg-cell-empty'
                 }
                 ${isFuture ? 'opacity-40' : ''}
               `}
@@ -176,12 +176,12 @@ const HabitRow: React.FC<HabitRowProps> = ({
               <div
                 key={dateKey}
                 className={`
-                  w-12 h-12 flex-shrink-0 rounded-sm border transition-all duration-200 relative
+                  w-12 h-12 flex-shrink-0 rounded-sm border-2 transition-all duration-200 relative
                   ${cell?.completed 
-                    ? 'border-primary/30 bg-cell-completed' 
+                    ? 'border-primary/60 bg-cell-completed' 
                     : isPressured 
-                      ? 'border-destructive/30 bg-cell-pressure' 
-                      : 'border-border/30 bg-cell-empty'
+                      ? 'border-destructive/50 bg-cell-pressure' 
+                      : 'border-border bg-cell-empty'
                   }
                   ${isFuture ? 'opacity-40' : ''}
                 `}
@@ -254,7 +254,7 @@ const HabitGridComponent: React.FC<HabitGridProps> = ({
   const today = getDateKey(new Date());
 
   return (
-    <div className="floating-panel p-4 animate-scale-in">
+    <div className="floating-panel p-4 animate-scale-in border-2 border-border">
       {/* Routine header */}
       <div className="mb-4 pb-3 border-b border-border/30">
         <h2 className="text-lg font-semibold text-foreground">{routine.name}</h2>
