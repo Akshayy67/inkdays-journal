@@ -6,6 +6,7 @@ import { loadWorldState, saveWorldState, updateJournalState, updateInsaneProgres
 import { getDateKey, getDatesInRange } from '@/lib/habitUtils';
 import SpatialCanvas from '@/components/world/SpatialCanvas';
 import WorldNavigator from '@/components/world/WorldNavigator';
+import WorldMap from '@/components/world/WorldMap';
 import ReviewIsland from '@/components/world/ReviewIsland';
 import InsaneState from '@/components/world/InsaneState';
 import FocusZone from '@/components/world/FocusZone';
@@ -237,6 +238,14 @@ const Index: React.FC = () => {
           )}
         </div>
       </SpatialCanvas>
+
+      {/* World Map - shows the journey */}
+      <WorldMap
+        currentZone={worldState.currentZone}
+        visitedZones={worldState.visitedZones}
+        insaneProgress={worldState.insaneProgress.currentDay}
+        onNavigate={handleNavigate}
+      />
 
       {/* World Navigator */}
       <WorldNavigator 
