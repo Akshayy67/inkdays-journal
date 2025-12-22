@@ -60,23 +60,22 @@ const Index: React.FC = () => {
     });
   }, []);
 
-  // Update insane progress based on consistency
-  useEffect(() => {
-    if (state?.routines) {
-      const consistentDays = calculateConsistencyDays(state.routines);
-      if (consistentDays !== worldState.insaneProgress.currentDay) {
-        const wasNotReached = worldState.insaneProgress.currentDay < 50;
-        const nowReached = consistentDays >= 50;
-        
-        const newWorld = updateInsaneProgress(worldState, { currentDay: consistentDays });
-        setWorldState(newWorld);
-        
-        if (wasNotReached && nowReached) {
-          setShowInsaneCelebration(true);
-        }
-      }
-    }
-  }, [state?.routines]);
+  // Demo mode enabled - skip consistency calculation to keep Day 50 visible
+  // To re-enable progress tracking, uncomment the following and remove demo mode from above
+  // useEffect(() => {
+  //   if (state?.routines) {
+  //     const consistentDays = calculateConsistencyDays(state.routines);
+  //     if (consistentDays !== worldState.insaneProgress.currentDay) {
+  //       const wasNotReached = worldState.insaneProgress.currentDay < 50;
+  //       const nowReached = consistentDays >= 50;
+  //       const newWorld = updateInsaneProgress(worldState, { currentDay: consistentDays });
+  //       setWorldState(newWorld);
+  //       if (wasNotReached && nowReached) {
+  //         setShowInsaneCelebration(true);
+  //       }
+  //     }
+  //   }
+  // }, [state?.routines]);
 
   // Keyboard shortcuts
   useEffect(() => {
