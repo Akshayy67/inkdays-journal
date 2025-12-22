@@ -15,6 +15,7 @@ import RecoveryZone from '@/components/world/RecoveryZone';
 import MilestonesZone from '@/components/world/MilestonesZone';
 import TimeCapsuleZone from '@/components/world/TimeCapsuleZone';
 import FlameShrineZone from '@/components/world/FlameShrineZone';
+import ZenGardenZone from '@/components/world/ZenGardenZone';
 import HabitGridComponent from '@/components/HabitGrid';
 import Toolbar from '@/components/Toolbar';
 import AddHabitModal from '@/components/AddHabitModal';
@@ -231,6 +232,10 @@ const Index: React.FC = () => {
             onBack={() => handleNavigate('center')}
           />
         );
+      case 'zen-garden':
+        return hasReached ? (
+          <ZenGardenZone onBack={() => handleNavigate('insane')} />
+        ) : null;
       default:
         return null;
     }
