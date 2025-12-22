@@ -261,24 +261,24 @@ const Index: React.FC = () => {
   return (
     <div className={`min-h-screen overflow-hidden transition-all duration-1000 ${hasReachedInsane ? 'bg-gradient-to-br from-canvas via-canvas to-primary/5' : 'bg-canvas'}`}>
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 p-4 pointer-events-none">
-        <div className="flex items-center justify-between pointer-events-auto">
-          <div className="flex items-center gap-3">
+      <header className="fixed top-0 left-0 right-0 z-40 p-2 sm:p-4 pointer-events-none">
+        <div className="flex items-center justify-between pointer-events-auto gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             <img 
               src={continuumHeader} 
               alt="CONTINUUM - Spatial Habit Tracker" 
-              className={`h-10 w-auto object-contain transition-all ${hasReachedInsane ? 'drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]' : ''}`}
+              className={`h-6 sm:h-10 w-auto object-contain transition-all ${hasReachedInsane ? 'drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]' : ''}`}
             />
             {hasReachedInsane && (
-              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 animate-pulse">
+              <span className="text-[10px] sm:text-xs font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 animate-pulse">
                 ⚡ INSANE
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto flex-shrink min-w-0">
             {state.routines.map(routine => (
               <button key={routine.id} onClick={() => handleSwitchRoutine(routine.id)}
-                className={`px-3 py-1.5 text-xs rounded-lg transition-all ${routine.id === activeRoutine?.id 
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs rounded-lg transition-all whitespace-nowrap flex-shrink-0 ${routine.id === activeRoutine?.id 
                   ? hasReachedInsane 
                     ? 'bg-primary/30 text-primary border border-primary/40 shadow-lg shadow-primary/20' 
                     : 'bg-primary/20 text-primary border border-primary/30' 
@@ -286,14 +286,14 @@ const Index: React.FC = () => {
                 {routine.name}
               </button>
             ))}
-            <button onClick={() => setShowAddRoutineModal(true)} className="px-2 py-1.5 text-xs rounded-lg bg-secondary text-muted-foreground hover:text-foreground">+ New</button>
+            <button onClick={() => setShowAddRoutineModal(true)} className="px-2 py-1 sm:py-1.5 text-[10px] sm:text-xs rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex-shrink-0">+</button>
           </div>
         </div>
       </header>
 
       {/* Spatial Canvas World */}
       <SpatialCanvas settings={state.settings} worldState={worldState} onZoneChange={handleZoneChange} renderZone={renderZone}>
-        <div id="habit-grid-container" className={`p-8 ${isRoutineFaded ? 'opacity-60' : ''}`} style={{ minWidth: '800px' }}>
+        <div id="habit-grid-container" className={`p-4 sm:p-8 ${isRoutineFaded ? 'opacity-60' : ''}`} style={{ minWidth: 'min(800px, 100vw)' }}>
           {activeRoutine && (
             <HabitGridComponent routine={activeRoutine} settings={state.settings} isErasing={isErasing} onCellUpdate={handleCellUpdate} onDeleteHabit={handleDeleteHabit} onDeleteSubHabit={handleDeleteSubHabit} onToggleExpanded={handleToggleExpanded} />
           )}
@@ -325,8 +325,8 @@ const Index: React.FC = () => {
       <ConfettiCelebration isActive={showMiniCelebration} onComplete={() => setShowMiniCelebration(false)} mini />
       <ConfettiCelebration isActive={showInsaneCelebration} onComplete={() => setShowInsaneCelebration(false)} />
 
-      {/* Navigation hints */}
-      <div className="fixed bottom-6 right-6 z-40 text-xs text-muted-foreground/50 text-right">
+      {/* Navigation hints - hidden on mobile */}
+      <div className="fixed bottom-6 right-6 z-40 text-xs text-muted-foreground/50 text-right hidden sm:block">
         <p>Arrow keys to navigate world</p>
         <p>Drag to pan freely</p>
       </div>
