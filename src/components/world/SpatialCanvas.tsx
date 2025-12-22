@@ -348,6 +348,19 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
           </div>
         </div>
 
+        {/* Zone: Zen Garden (Above Focus, only when reached) */}
+        <div 
+          className="absolute"
+          style={{ 
+            left: ZONE_POSITIONS['zen-garden'].x, 
+            top: ZONE_POSITIONS['zen-garden'].y 
+          }}
+        >
+          <div className="w-[800px]">
+            {renderZone('zen-garden')}
+          </div>
+        </div>
+
         {/* Visual connectors between zones */}
         <svg 
           className="absolute pointer-events-none"

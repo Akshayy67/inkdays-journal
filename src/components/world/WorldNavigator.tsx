@@ -51,9 +51,18 @@ const WorldNavigator: React.FC<WorldNavigatorProps> = ({
         if (canAccessFocus || insaneReached) {
           directions.push({ zone: 'focus', direction: 'up' });
         }
+        if (insaneReached) {
+          directions.push({ zone: 'zen-garden', direction: 'up' });
+        }
         break;
       case 'focus':
         directions.push({ zone: 'insane', direction: 'down' });
+        if (insaneReached) {
+          directions.push({ zone: 'zen-garden', direction: 'up' });
+        }
+        break;
+      case 'zen-garden':
+        directions.push({ zone: 'focus', direction: 'down' });
         break;
       case 'journal':
         directions.push({ zone: 'center', direction: 'right' });
