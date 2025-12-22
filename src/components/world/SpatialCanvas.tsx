@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { AppSettings } from '@/types/habit';
 import { ZoneType, ZONE_POSITIONS, WorldState } from '@/types/world';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Zap, Focus, ChevronUp } from 'lucide-react';
 
 interface SpatialCanvasProps {
   children: React.ReactNode;
@@ -180,55 +182,47 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
         }}
       />
 
-      {/* Subtle left-side hint - suggesting something above */}
-      {worldState.currentZone === 'center' && (
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1.5, delay: 4 }}
-          className="fixed left-6 top-1/3 pointer-events-none z-10"
+      {/* Navigation buttons on left side */}
+      <motion.div 
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+        className="fixed left-4 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-3"
+      >
+        {/* Focus Zone button */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigateToZone('focus')}
+          className="flex items-center gap-2 bg-background/80 backdrop-blur-sm border-primary/30 hover:border-primary hover:bg-primary/10 text-foreground"
         >
-          <div className="flex flex-col items-center gap-3">
-            {/* Upward arrow hint */}
-            <motion.div
-              animate={{ y: [0, -4, 0] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-              className="text-muted-foreground/30"
-            >
-              <svg width="12" height="20" viewBox="0 0 12 20" fill="none">
-                <path 
-                  d="M6 18V2M6 2L2 6M6 2L10 6" 
-                  stroke="currentColor" 
-                  strokeWidth="1.5" 
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </motion.div>
-            
-            {/* Vertical text */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.25 }}
-              transition={{ duration: 3, delay: 6 }}
-              className="text-[9px] text-muted-foreground tracking-[0.3em] uppercase"
-              style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
-            >
-              something waits above
-            </motion.p>
-            
-            {/* Small pulsing dot */}
-            <motion.div
-              animate={{ 
-                opacity: [0.15, 0.4, 0.15],
-                scale: [1, 1.3, 1],
-              }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="w-1 h-1 rounded-full bg-primary/40"
-            />
-          </div>
-        </motion.div>
-      )}
+          <Focus className="w-4 h-4 text-primary" />
+          <span className="text-sm font-medium">Focus Zone</span>
+          <ChevronUp className="w-3 h-3 text-muted-foreground" />
+        </Button>
+        
+        {/* Insane State button */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigateToZone('insane')}
+          className="flex items-center gap-2 bg-background/80 backdrop-blur-sm border-amber-500/30 hover:border-amber-500 hover:bg-amber-500/10 text-foreground"
+        >
+          <Zap className="w-4 h-4 text-amber-500" />
+          <span className="text-sm font-medium">Insane State</span>
+          <ChevronUp className="w-3 h-3 text-muted-foreground" />
+        </Button>
+        
+        {/* Subtle hint text */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.6 }}
+          transition={{ duration: 1, delay: 1 }}
+          className="text-xs text-muted-foreground text-center mt-2"
+        >
+          ↑ explore above
+        </motion.p>
+      </motion.div>
 
       {/* World content */}
       <div

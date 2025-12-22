@@ -61,49 +61,49 @@
 
   .dark {
     --background: 220 10% 6%;
-    --foreground: 220 10% 92%;
+    --foreground: 220 10% 96%;
 
-    --card: 220 10% 8%;
-    --card-foreground: 220 10% 92%;
+    --card: 220 10% 10%;
+    --card-foreground: 220 10% 96%;
 
-    --popover: 220 10% 10%;
-    --popover-foreground: 220 10% 92%;
+    --popover: 220 10% 12%;
+    --popover-foreground: 220 10% 96%;
 
-    --primary: 175 35% 45%;
+    --primary: 175 50% 55%;
     --primary-foreground: 220 10% 98%;
 
-    --secondary: 220 10% 12%;
-    --secondary-foreground: 220 10% 85%;
+    --secondary: 220 10% 16%;
+    --secondary-foreground: 220 10% 92%;
 
-    --muted: 220 10% 15%;
-    --muted-foreground: 220 10% 55%;
+    --muted: 220 10% 18%;
+    --muted-foreground: 220 10% 70%;
 
-    --accent: 175 30% 35%;
+    --accent: 175 40% 45%;
     --accent-foreground: 220 10% 98%;
 
-    --destructive: 0 60% 50%;
+    --destructive: 0 60% 55%;
     --destructive-foreground: 220 10% 98%;
 
-    --border: 220 10% 18%;
-    --input: 220 10% 15%;
-    --ring: 175 35% 45%;
+    --border: 220 10% 22%;
+    --input: 220 10% 18%;
+    --ring: 175 50% 55%;
 
     /* InkDays Custom Tokens - Dark */
     --canvas-bg: 220 12% 5%;
-    --canvas-grid: 220 10% 12%;
-    --cell-empty: 220 10% 10%;
-    --cell-completed: 175 30% 25%;
-    --cell-pressure: 0 40% 15%;
-    --stroke-light: 175 35% 55%;
-    --stroke-medium: 175 40% 45%;
-    --stroke-dense: 175 45% 35%;
-    --morning: 35 60% 50%;
-    --evening: 250 40% 50%;
-    --anytime: 175 35% 45%;
+    --canvas-grid: 220 10% 15%;
+    --cell-empty: 220 10% 12%;
+    --cell-completed: 175 40% 30%;
+    --cell-pressure: 0 40% 20%;
+    --stroke-light: 175 45% 60%;
+    --stroke-medium: 175 50% 50%;
+    --stroke-dense: 175 55% 40%;
+    --morning: 35 70% 55%;
+    --evening: 250 50% 55%;
+    --anytime: 175 50% 55%;
 
     /* Shadows - Dark */
     --shadow-soft: 0 4px 20px -4px hsl(220 10% 0% / 0.5);
-    --shadow-glow: 0 0 30px -10px hsl(175 35% 45% / 0.3);
+    --shadow-glow: 0 0 30px -10px hsl(175 50% 55% / 0.4);
   }
 }
 
