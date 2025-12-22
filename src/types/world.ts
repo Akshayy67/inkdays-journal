@@ -105,9 +105,9 @@ export const defaultWorldState: WorldState = {
     currentPage: 0,
   },
   insaneProgress: {
-    currentDay: 0,
+    currentDay: 50, // Set to 50 to demo all features
     targetDays: 50,
-    isExploring: false,
+    isExploring: true, // Already exploring
     unlocks: defaultMilestoneUnlocks,
     timeCapsules: [],
     flameStrength: 0,

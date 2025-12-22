@@ -41,40 +41,41 @@ const Index: React.FC = () => {
     Promise.all([loadState(), Promise.resolve(loadWorldState())]).then(([appState, world]) => {
       setState(appState);
 
-      // Migrate older saves that had wrong targetDays
-      const migratedWorld = world.insaneProgress?.targetDays !== 50
-        ? {
-            ...world,
-            insaneProgress: {
-              ...world.insaneProgress,
-              targetDays: 50,
-            },
-          }
-        : world;
+      // Demo mode: Force Day 50 to show all features
+      const demoWorld = {
+        ...world,
+        insaneProgress: {
+          ...world.insaneProgress,
+          currentDay: 50,
+          targetDays: 50,
+          isExploring: true,
+          consecutiveStreak: 50,
+          flameStrength: 100,
+        },
+      };
 
-      setWorldState(migratedWorld);
-      if (migratedWorld !== world) saveWorldState(migratedWorld);
+      setWorldState(demoWorld);
+      saveWorldState(demoWorld);
       setIsLoading(false);
     });
   }, []);
 
-  // Update insane progress based on consistency
-  useEffect(() => {
-    if (state?.routines) {
-      const consistentDays = calculateConsistencyDays(state.routines);
-      if (consistentDays !== worldState.insaneProgress.currentDay) {
-        const wasNotReached = worldState.insaneProgress.currentDay < 50;
-        const nowReached = consistentDays >= 50;
-        
-        const newWorld = updateInsaneProgress(worldState, { currentDay: consistentDays });
-        setWorldState(newWorld);
-        
-        if (wasNotReached && nowReached) {
-          setShowInsaneCelebration(true);
-        }
-      }
-    }
-  }, [state?.routines]);
+  // Demo mode enabled - skip consistency calculation to keep Day 50 visible
+  // To re-enable progress tracking, uncomment the following and remove demo mode from above
+  // useEffect(() => {
+  //   if (state?.routines) {
+  //     const consistentDays = calculateConsistencyDays(state.routines);
+  //     if (consistentDays !== worldState.insaneProgress.currentDay) {
+  //       const wasNotReached = worldState.insaneProgress.currentDay < 50;
+  //       const nowReached = consistentDays >= 50;
+  //       const newWorld = updateInsaneProgress(worldState, { currentDay: consistentDays });
+  //       setWorldState(newWorld);
+  //       if (wasNotReached && nowReached) {
+  //         setShowInsaneCelebration(true);
+  //       }
+  //     }
+  //   }
+  // }, [state?.routines]);
 
   // Keyboard shortcuts
   useEffect(() => {
