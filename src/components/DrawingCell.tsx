@@ -184,11 +184,12 @@ const DrawingCell: React.FC<DrawingCellProps> = ({
       width={48}
       height={48}
       className={`
-        drawing-canvas w-full h-full rounded-sm
+        drawing-canvas w-full h-full rounded-sm touch-none
         ${isErasing && !noUndoMode ? 'erasing' : ''}
         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
         ${isPressured && !completed ? 'shadow-inner' : ''}
       `}
+      style={{ touchAction: 'none' }}
       onMouseDown={handleStart}
       onMouseMove={handleMove}
       onMouseUp={handleEnd}
@@ -196,6 +197,7 @@ const DrawingCell: React.FC<DrawingCellProps> = ({
       onTouchStart={handleStart}
       onTouchMove={handleMove}
       onTouchEnd={handleEnd}
+      onTouchCancel={handleLeave}
     />
   );
 };

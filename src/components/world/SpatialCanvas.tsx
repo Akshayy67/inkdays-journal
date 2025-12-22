@@ -60,7 +60,7 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     navigateToZone('center');
   }, []);
 
-  // Manual panning
+  // Manual panning (mouse)
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.target === containerRef.current || (e.target as HTMLElement).classList.contains('spatial-bg')) {
       setIsPanning(true);
@@ -112,16 +112,49 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
     }
   }, [offset, worldState.currentZone, onZoneChange]);
 
+  // Touch panning
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.target === containerRef.current || (e.target as HTMLElement).classList.contains('spatial-bg')) {
+      const touch = e.touches[0];
+      setIsPanning(true);
+      setStartPan({
+        x: touch.clientX - offset.x,
+        y: touch.clientY - offset.y,
+      });
+    }
+  };
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (!isPanning) return;
+    e.preventDefault();
+    
+    const touch = e.touches[0];
+    const newOffset = {
+      x: touch.clientX - startPan.x,
+      y: touch.clientY - startPan.y,
+    };
+    setOffset(newOffset);
+    setTargetOffset(newOffset);
+  }, [isPanning, startPan]);
+
+  const handleTouchEnd = useCallback(() => {
+    handleMouseUp();
+  }, [handleMouseUp]);
+
   useEffect(() => {
     if (isPanning) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleTouchEnd);
     }
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [isPanning, handleMouseMove, handleMouseUp]);
+  }, [isPanning, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -165,12 +198,13 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
   return (
     <div
       ref={containerRef}
-      className="spatial-bg w-full h-screen overflow-hidden cursor-grab"
+      className="spatial-bg w-full h-screen overflow-hidden cursor-grab touch-none"
       style={{ 
         cursor: isPanning ? 'grabbing' : 'grab',
         background: 'hsl(var(--canvas-bg))',
       }}
       onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
     >
       {/* Background grid pattern */}
       <div 
