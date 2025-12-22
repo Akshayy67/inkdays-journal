@@ -1,4 +1,5 @@
 export type TimeOfDay = 'morning' | 'evening' | 'anytime';
+export type RoutineType = 'permanent' | 'seasonal' | 'temporary';
 
 export interface Stroke {
   points: { x: number; y: number }[];
@@ -19,6 +20,7 @@ export interface SubHabit {
   timeOfDay: TimeOfDay;
   createdAt: number;
   cells: Record<string, CellData>; // key = date string (YYYY-MM-DD)
+  intent?: string; // "Why does this matter to you?"
 }
 
 export interface Habit {
@@ -29,9 +31,14 @@ export interface Habit {
   cells: Record<string, CellData>; // key = date string (YYYY-MM-DD)
   subHabits?: SubHabit[];
   isExpanded?: boolean;
+  intent?: string; // "Why does this matter to you?"
 }
 
-export type RoutineDuration = 30 | 60 | 90 | 'custom';
+export interface WeeklyReflection {
+  weekNumber: number; // Week 1, 2, 3, etc. from start date
+  content: string;
+  createdAt: number;
+}
 
 export interface Routine {
   id: string;
@@ -41,6 +48,10 @@ export interface Routine {
   habits: Habit[];
   position: { x: number; y: number };
   createdAt: number;
+  routineType: RoutineType;
+  reflections?: WeeklyReflection[];
+  celebrationShown?: boolean; // Track if completion celebration was shown
+  endDate?: string; // For seasonal/temporary routines
 }
 
 // Legacy type for backward compatibility
@@ -88,4 +99,13 @@ export interface OverallStats {
   weeklyConsistency: number[];
   heatMap: Record<string, number>;
   momentum: 'improving' | 'stable' | 'declining';
+}
+
+// Recovery state for gentle failure handling
+export interface RecoveryState {
+  habitId: string;
+  habitName: string;
+  consecutiveMissedDays: number;
+  lastCompletedDate?: string;
+  intent?: string;
 }

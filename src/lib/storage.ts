@@ -18,6 +18,8 @@ const createDefaultRoutine = (): Routine => ({
   duration: 30,
   position: { x: 100, y: 100 },
   createdAt: Date.now(),
+  routineType: 'permanent',
+  reflections: [],
 });
 
 const defaultState: AppState = {
@@ -45,6 +47,8 @@ const migrateState = (state: any): AppState => {
       duration: grid.daysVisible,
       position: grid.position,
       createdAt: Date.now(),
+      routineType: 'permanent' as const,
+      reflections: [],
     }));
   }
 
@@ -58,9 +62,11 @@ const migrateState = (state: any): AppState => {
     migrated.activeRoutineId = migrated.routines[0].id;
   }
 
-  // Ensure all habits have subHabits array
+  // Ensure all habits have subHabits array and routines have required fields
   migrated.routines = migrated.routines.map(routine => ({
     ...routine,
+    routineType: routine.routineType || 'permanent',
+    reflections: routine.reflections || [],
     habits: routine.habits.map(habit => ({
       ...habit,
       subHabits: habit.subHabits || [],
@@ -295,6 +301,46 @@ export const setActiveRoutine = async (
     ...state,
     activeRoutineId: routineId,
   };
+  await saveState(newState);
+  return newState;
+};
+
+export const addReflection = async (
+  state: AppState,
+  routineId: string,
+  weekNumber: number,
+  content: string
+): Promise<AppState> => {
+  const newState = { ...state };
+  const routine = newState.routines.find(r => r.id === routineId);
+  if (!routine) return state;
+
+  if (!routine.reflections) {
+    routine.reflections = [];
+  }
+
+  // Update existing or add new
+  const existingIndex = routine.reflections.findIndex(r => r.weekNumber === weekNumber);
+  if (existingIndex >= 0) {
+    routine.reflections[existingIndex] = { weekNumber, content, createdAt: Date.now() };
+  } else {
+    routine.reflections.push({ weekNumber, content, createdAt: Date.now() });
+  }
+
+  await saveState(newState);
+  return newState;
+};
+
+export const markCelebrationShown = async (
+  state: AppState,
+  routineId: string
+): Promise<AppState> => {
+  const newState = { ...state };
+  const routine = newState.routines.find(r => r.id === routineId);
+  if (!routine) return state;
+
+  routine.celebrationShown = true;
+
   await saveState(newState);
   return newState;
 };
