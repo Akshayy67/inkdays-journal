@@ -1,4 +1,4 @@
-import { WorldState, JournalState, InsaneStateProgress, defaultWorldState } from '@/types/world';
+import { WorldState, JournalState, InsaneStateProgress, defaultWorldState, MilestoneUnlocks, TimeCapsule, defaultMilestoneUnlocks } from '@/types/world';
 
 const WORLD_STORAGE_KEY = 'inkdays-world-state';
 
@@ -17,6 +17,11 @@ export const loadWorldState = (): WorldState => {
         insaneProgress: {
           ...defaultWorldState.insaneProgress,
           ...state.insaneProgress,
+          unlocks: {
+            ...defaultMilestoneUnlocks,
+            ...state.insaneProgress?.unlocks,
+          },
+          timeCapsules: state.insaneProgress?.timeCapsules || [],
         },
       };
     }
@@ -65,8 +70,48 @@ export const updateInsaneProgress = (
   return newState;
 };
 
+export const updateMilestoneUnlocks = (
+  worldState: WorldState,
+  updates: Partial<MilestoneUnlocks>
+): WorldState => {
+  const newState = {
+    ...worldState,
+    insaneProgress: {
+      ...worldState.insaneProgress,
+      unlocks: {
+        ...worldState.insaneProgress.unlocks,
+        ...updates,
+      },
+    },
+  };
+  saveWorldState(newState);
+  return newState;
+};
+
+export const addTimeCapsule = (
+  worldState: WorldState,
+  message: string
+): WorldState => {
+  const newCapsule: TimeCapsule = {
+    id: Date.now().toString(),
+    message,
+    createdAt: Date.now(),
+    createdAtDay: worldState.insaneProgress.currentDay,
+    isOpened: false,
+  };
+  
+  const newState = {
+    ...worldState,
+    insaneProgress: {
+      ...worldState.insaneProgress,
+      timeCapsules: [...worldState.insaneProgress.timeCapsules, newCapsule],
+    },
+  };
+  saveWorldState(newState);
+  return newState;
+};
+
 export const calculateConsistencyDays = (routines: any[]): number => {
-  // Calculate total consecutive days of consistency across all routines
   let totalConsistentDays = 0;
   
   routines.forEach(routine => {

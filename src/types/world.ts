@@ -1,4 +1,4 @@
-export type ZoneType = 'center' | 'review' | 'insane' | 'focus' | 'journal' | 'recovery';
+export type ZoneType = 'center' | 'review' | 'insane' | 'focus' | 'journal' | 'recovery' | 'zen-garden';
 
 export interface WorldZone {
   id: ZoneType;
@@ -20,11 +20,45 @@ export interface JournalState {
   currentPage: number;
 }
 
+// Milestone unlocks tracking
+export interface MilestoneUnlocks {
+  day10Theme: boolean;      // Custom theme color
+  day20Particles: boolean;  // Special particle effects
+  day30Sounds: boolean;     // Ambient sounds
+  day40Title: boolean;      // Personal title
+  day50Crown: boolean;      // Insane Crown + Zen Garden access
+  customTheme?: string;     // Selected theme color
+  selectedSound?: 'lofi' | 'nature' | 'cosmic' | null;
+  personalTitle?: string;
+}
+
+// Time capsule message
+export interface TimeCapsule {
+  id: string;
+  message: string;
+  createdAt: number;
+  createdAtDay: number;
+  isOpened: boolean;
+}
+
+// Daily wisdom quote
+export interface DailyQuote {
+  day: number;
+  quote: string;
+  author?: string;
+}
+
 export interface InsaneStateProgress {
   currentDay: number;
   targetDays: number; // 50
   reachedAt?: number;
   isExploring: boolean;
+  // New additions
+  unlocks: MilestoneUnlocks;
+  timeCapsules: TimeCapsule[];
+  flameStrength: number; // 0-100, grows with consistency, shrinks with misses
+  lastFlameUpdate?: number;
+  consecutiveStreak: number; // Current consecutive days
 }
 
 export interface FocusGame {
@@ -47,6 +81,18 @@ export const ZONE_POSITIONS: Record<ZoneType, { x: number; y: number }> = {
   focus: { x: 0, y: -4200 },
   journal: { x: -2000, y: 0 },
   recovery: { x: 0, y: 1500 },
+  'zen-garden': { x: 0, y: -5600 },
+};
+
+export const defaultMilestoneUnlocks: MilestoneUnlocks = {
+  day10Theme: false,
+  day20Particles: false,
+  day30Sounds: false,
+  day40Title: false,
+  day50Crown: false,
+  customTheme: undefined,
+  selectedSound: null,
+  personalTitle: undefined,
 };
 
 export const defaultWorldState: WorldState = {
@@ -59,6 +105,10 @@ export const defaultWorldState: WorldState = {
     currentDay: 0,
     targetDays: 50,
     isExploring: false,
+    unlocks: defaultMilestoneUnlocks,
+    timeCapsules: [],
+    flameStrength: 0,
+    consecutiveStreak: 0,
   },
   visitedZones: ['center'],
 };
