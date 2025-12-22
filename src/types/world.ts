@@ -76,12 +76,12 @@ export interface WorldState {
 
 export const ZONE_POSITIONS: Record<ZoneType, { x: number; y: number }> = {
   center: { x: 0, y: 0 },
-  review: { x: 0, y: -1200 },
-  insane: { x: 0, y: -2800 },
-  focus: { x: 0, y: -4200 },
+  review: { x: 0, y: -1400 },
+  insane: { x: 0, y: -3600 },
+  focus: { x: 0, y: -5800 },
   journal: { x: -2000, y: 0 },
   recovery: { x: 0, y: 1500 },
-  'zen-garden': { x: 0, y: -5600 },
+  'zen-garden': { x: 0, y: -7600 },
 };
 
 export const defaultMilestoneUnlocks: MilestoneUnlocks = {
