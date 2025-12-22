@@ -180,47 +180,54 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
         }}
       />
 
-      {/* Subtle upward hint - a gentle glow suggesting something above */}
+      {/* Subtle left-side hint - suggesting something above */}
       {worldState.currentZone === 'center' && (
-        <div className="fixed top-0 left-1/2 -translate-x-1/2 pointer-events-none z-10">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 2, delay: 3 }}
-            className="flex flex-col items-center"
-          >
-            {/* Subtle upward beam */}
-            <div 
-              className="w-px h-16 opacity-20"
-              style={{
-                background: 'linear-gradient(to top, hsl(var(--primary) / 0.3), transparent)',
-              }}
-            />
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 1.5, delay: 4 }}
+          className="fixed left-6 top-1/3 pointer-events-none z-10"
+        >
+          <div className="flex flex-col items-center gap-3">
+            {/* Upward arrow hint */}
+            <motion.div
+              animate={{ y: [0, -4, 0] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              className="text-muted-foreground/30"
+            >
+              <svg width="12" height="20" viewBox="0 0 12 20" fill="none">
+                <path 
+                  d="M6 18V2M6 2L2 6M6 2L10 6" 
+                  stroke="currentColor" 
+                  strokeWidth="1.5" 
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </motion.div>
+            
+            {/* Vertical text */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.25 }}
+              transition={{ duration: 3, delay: 6 }}
+              className="text-[9px] text-muted-foreground tracking-[0.3em] uppercase"
+              style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+            >
+              something waits above
+            </motion.p>
+            
             {/* Small pulsing dot */}
             <motion.div
               animate={{ 
-                opacity: [0.2, 0.5, 0.2],
-                scale: [1, 1.2, 1],
+                opacity: [0.15, 0.4, 0.15],
+                scale: [1, 1.3, 1],
               }}
-              transition={{ 
-                duration: 3, 
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="w-1.5 h-1.5 rounded-full mt-1"
-              style={{ backgroundColor: 'hsl(var(--primary) / 0.4)' }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="w-1 h-1 rounded-full bg-primary/40"
             />
-            {/* Whisper text that fades in very slowly */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.3 }}
-              transition={{ duration: 4, delay: 8 }}
-              className="text-[10px] text-muted-foreground/40 mt-2 tracking-widest uppercase"
-            >
-              ↑
-            </motion.p>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
       )}
 
       {/* World content */}
