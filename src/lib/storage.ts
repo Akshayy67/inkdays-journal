@@ -1,24 +1,6 @@
-import { openDB, IDBPDatabase } from 'idb';
-import { AppState, HabitGrid, Habit, CellData, AppSettings, Routine, SubHabit } from '@/types/habit';
+import { AppState, Habit, CellData, AppSettings, Routine, SubHabit } from '@/types/habit';
 
-const DB_NAME = 'inkdays-db';
-const DB_VERSION = 2;
-const STORE_NAME = 'app-state';
-
-let dbPromise: Promise<IDBPDatabase> | null = null;
-
-const getDB = () => {
-  if (!dbPromise) {
-    dbPromise = openDB(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME);
-        }
-      },
-    });
-  }
-  return dbPromise;
-};
+const STORAGE_KEY = 'inkdays-state';
 
 const defaultSettings: AppSettings = {
   pressureMode: false,
@@ -36,15 +18,6 @@ const createDefaultRoutine = (): Routine => ({
   duration: 30,
   position: { x: 100, y: 100 },
   createdAt: Date.now(),
-});
-
-// Legacy grid creator for backward compatibility
-const createDefaultGrid = (): HabitGrid => ({
-  id: crypto.randomUUID(),
-  habits: [],
-  startDate: new Date().toISOString().split('T')[0],
-  daysVisible: 7,
-  position: { x: 100, y: 100 },
 });
 
 const defaultState: AppState = {
@@ -67,7 +40,7 @@ const migrateState = (state: any): AppState => {
     migrated.routines = migrated.grids.map((grid, index) => ({
       id: grid.id,
       name: `Routine ${index + 1}`,
-      habits: grid.habits.map(h => ({ ...h, subHabits: [], isExpanded: true })),
+      habits: grid.habits.map((h: Habit) => ({ ...h, subHabits: [], isExpanded: true })),
       startDate: grid.startDate,
       duration: grid.daysVisible,
       position: grid.position,
@@ -100,22 +73,21 @@ const migrateState = (state: any): AppState => {
 
 export const loadState = async (): Promise<AppState> => {
   try {
-    const db = await getDB();
-    const state = await db.get(STORE_NAME, 'state');
-    if (state) {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const state = JSON.parse(stored);
       return migrateState(state);
     }
-    return defaultState;
+    return { ...defaultState, activeRoutineId: defaultState.routines[0].id };
   } catch (error) {
     console.error('Failed to load state:', error);
-    return defaultState;
+    return { ...defaultState, activeRoutineId: defaultState.routines[0].id };
   }
 };
 
 export const saveState = async (state: AppState): Promise<void> => {
   try {
-    const db = await getDB();
-    await db.put(STORE_NAME, state, 'state');
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch (error) {
     console.error('Failed to save state:', error);
   }

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Plus, Eraser, ZoomIn, ZoomOut, BarChart3, Settings, Download, X } from 'lucide-react';
+import { Plus, Eraser, ZoomIn, ZoomOut, BarChart3, Settings, Download, X, Sun, Moon } from 'lucide-react';
 import { AppSettings } from '@/types/habit';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Switch } from '@/components/ui/switch';
+import { useTheme } from 'next-themes';
 
 interface ToolbarProps {
   settings: AppSettings;
@@ -28,6 +29,11 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onExport,
 }) => {
   const [showSettings, setShowSettings] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
@@ -93,6 +99,18 @@ const Toolbar: React.FC<ToolbarProps> = ({
           title="Export"
         >
           <Download className="w-5 h-5" />
+        </button>
+
+        <button
+          onClick={toggleTheme}
+          className="toolbar-button"
+          title="Toggle Theme"
+        >
+          {theme === 'dark' ? (
+            <Sun className="w-5 h-5" />
+          ) : (
+            <Moon className="w-5 h-5" />
+          )}
         </button>
 
         <button

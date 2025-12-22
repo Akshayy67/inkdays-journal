@@ -6,6 +6,60 @@
 
 @layer base {
   :root {
+    /* Light mode */
+    --background: 220 20% 97%;
+    --foreground: 220 15% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 15%;
+
+    --primary: 175 45% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 15% 92%;
+    --secondary-foreground: 220 15% 30%;
+
+    --muted: 220 15% 90%;
+    --muted-foreground: 220 10% 45%;
+
+    --accent: 175 40% 90%;
+    --accent-foreground: 175 45% 25%;
+
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 88%;
+    --input: 220 15% 95%;
+    --ring: 175 45% 40%;
+
+    --radius: 0.5rem;
+
+    /* InkDays Custom Tokens - Light */
+    --canvas-bg: 220 20% 96%;
+    --canvas-grid: 220 15% 88%;
+    --cell-empty: 220 15% 94%;
+    --cell-completed: 175 40% 85%;
+    --cell-pressure: 0 50% 92%;
+    --stroke-light: 175 45% 50%;
+    --stroke-medium: 175 50% 40%;
+    --stroke-dense: 175 55% 30%;
+    --morning: 35 70% 50%;
+    --evening: 250 50% 55%;
+    --anytime: 175 45% 40%;
+
+    /* Shadows - Light */
+    --shadow-soft: 0 4px 20px -4px hsl(220 20% 0% / 0.08);
+    --shadow-glow: 0 0 30px -10px hsl(175 45% 40% / 0.2);
+
+    /* Transitions */
+    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .dark {
     --background: 220 10% 6%;
     --foreground: 220 10% 92%;
 
@@ -34,9 +88,7 @@
     --input: 220 10% 15%;
     --ring: 175 35% 45%;
 
-    --radius: 0.5rem;
-
-    /* InkDays Custom Tokens */
+    /* InkDays Custom Tokens - Dark */
     --canvas-bg: 220 12% 5%;
     --canvas-grid: 220 10% 12%;
     --cell-empty: 220 10% 10%;
@@ -49,18 +101,9 @@
     --evening: 250 40% 50%;
     --anytime: 175 35% 45%;
 
-    /* Shadows */
+    /* Shadows - Dark */
     --shadow-soft: 0 4px 20px -4px hsl(220 10% 0% / 0.5);
     --shadow-glow: 0 0 30px -10px hsl(175 35% 45% / 0.3);
-
-    /* Transitions */
-    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-spring: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  .dark {
-    --background: 220 10% 6%;
-    --foreground: 220 10% 92%;
   }
 }
 
@@ -137,7 +180,7 @@
   }
 
   .stat-card {
-    @apply bg-card border border-border rounded-xl p-4;
+    @apply bg-secondary/50 border border-border rounded-xl p-4;
   }
 
   .ink-stroke {
