@@ -46,8 +46,8 @@ const Index: React.FC = () => {
     if (state?.routines) {
       const consistentDays = calculateConsistencyDays(state.routines);
       if (consistentDays !== worldState.insaneProgress.currentDay) {
-        const wasNotReached = worldState.insaneProgress.currentDay < 500;
-        const nowReached = consistentDays >= 500;
+        const wasNotReached = worldState.insaneProgress.currentDay < 50;
+        const nowReached = consistentDays >= 50;
         
         const newWorld = updateInsaneProgress(worldState, { currentDay: consistentDays });
         setWorldState(newWorld);
@@ -245,7 +245,7 @@ const Index: React.FC = () => {
         currentZone={worldState.currentZone} 
         onNavigate={handleNavigate}
         canAccessFocus={worldState.visitedZones.includes('review')}
-        insaneReached={worldState.insaneProgress.currentDay >= 500}
+        insaneReached={worldState.insaneProgress.currentDay >= 50}
       />
 
       {/* Toolbar */}

@@ -227,12 +227,12 @@ const JourneyPath: React.FC<{ progress: number }> = ({ progress }) => {
 
 // Milestone markers along the journey
 const Milestones: React.FC<{ currentDay: number }> = ({ currentDay }) => {
-  const milestones = [50, 100, 200, 300, 400, 500];
+  const milestones = [10, 20, 30, 40, 50];
   
   return (
     <group>
       {milestones.map((day) => {
-        const t = day / 500;
+        const t = day / 50;
         const angle = t * Math.PI * 4;
         const radius = 3 - t * 2;
         const y = t * 8 - 6;
