@@ -258,8 +258,8 @@ const Index: React.FC = () => {
   if (isLoading || !state) {
     return (
       <div className="min-h-screen bg-canvas flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-semibold text-foreground mb-2">InkDays</h1>
+      <div className="text-center">
+          <h1 className="text-2xl font-semibold text-foreground mb-2">CONTINUUM</h1>
           <p className="text-muted-foreground">Loading your world...</p>
         </div>
       </div>
@@ -280,7 +280,7 @@ const Index: React.FC = () => {
       <header className="fixed top-0 left-0 right-0 z-40 p-4 pointer-events-none">
         <div className="flex items-center justify-between pointer-events-auto">
           <div className="flex items-center gap-3">
-            <h1 className={`text-xl font-bold tracking-tight transition-all ${hasReachedInsane ? 'text-primary' : 'text-foreground'}`}>InkDays</h1>
+            <h1 className={`text-xl font-bold tracking-tight transition-all ${hasReachedInsane ? 'text-primary' : 'text-foreground'}`}>CONTINUUM</h1>
             {hasReachedInsane ? (
               <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 animate-pulse">
                 ⚡ INSANE
