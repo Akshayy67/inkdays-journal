@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { InsaneStateProgress } from '@/types/world';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Star } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface InsaneStateProps {
   progress: InsaneStateProgress;
@@ -11,183 +10,235 @@ interface InsaneStateProps {
 const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
   const hasReached = progress.currentDay >= progress.targetDays;
   
-  // Calculate visual distance - island gets closer as days increase
+  // Calculate evolution tier (every 10 days = 1 tier, max 50 tiers)
+  const evolutionTier = Math.min(Math.floor(progress.currentDay / 10), 50);
+  
+  // Subtle visual evolution based on tier
+  const evolutionStyle = useMemo(() => {
+    // Color warmth increases gradually (from cool blue-gray to warm gold)
+    const hueShift = evolutionTier * 0.8; // 0 to 40 degrees toward warm
+    const saturation = 30 + evolutionTier * 0.6; // 30% to 60%
+    const lightness = 45 + evolutionTier * 0.3; // 45% to 60%
+    
+    // Glow intensity increases
+    const glowOpacity = 0.1 + evolutionTier * 0.008; // 0.1 to 0.5
+    const glowSize = 20 + evolutionTier * 1.5; // 20px to 95px
+    
+    // Border refinement
+    const borderOpacity = 0.15 + evolutionTier * 0.01; // 0.15 to 0.65
+    
+    return {
+      primaryHue: 175 + hueShift, // Shifts from teal toward gold
+      saturation,
+      lightness,
+      glowOpacity,
+      glowSize,
+      borderOpacity,
+    };
+  }, [evolutionTier]);
+
+  // Visual distance - closer with more days
   const visualProgress = useMemo(() => {
     const ratio = Math.min(progress.currentDay / progress.targetDays, 1);
-    // Use easeOutExpo for subtle acceleration as you get closer
-    return 1 - Math.pow(1 - ratio, 3);
+    return 1 - Math.pow(1 - ratio, 4); // Exponential approach
   }, [progress.currentDay, progress.targetDays]);
 
-  // Opacity increases as you approach
-  const opacity = 0.3 + visualProgress * 0.7;
-  // Scale increases as you approach
-  const scale = 0.6 + visualProgress * 0.4;
+  // Final form styling
+  const finalFormStyle = useMemo(() => ({
+    primaryColor: `hsl(45, 70%, 55%)`, // Warm gold
+    glowColor: `hsl(45, 60%, 50%)`,
+    crownGlow: `0 0 60px hsl(45, 70%, 50% / 0.4)`,
+  }), []);
 
+  // Reached and exploring - the calm space
   if (hasReached && progress.isExploring) {
-    // Explorable calm space after reaching
     return (
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
+        transition={{ duration: 2 }}
         className="w-full min-h-[800px] relative"
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
+        {/* Ethereal background */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: `radial-gradient(ellipse at center, hsl(45, 30%, 15% / 0.3) 0%, transparent 70%)`,
+          }}
+        />
         
-        <div className="relative z-10 flex flex-col items-center justify-center min-h-[600px]">
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-[700px]">
+          {/* Crown/Halo element - minimal, elegant */}
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="text-center"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+            className="relative mb-8"
           >
-            <div className="flex items-center justify-center gap-2 mb-4">
-              {[...Array(5)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  animate={{ 
-                    y: [0, -8, 0],
-                    opacity: [0.5, 1, 0.5]
-                  }}
-                  transition={{ 
-                    duration: 3,
-                    delay: i * 0.3,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                >
-                  <Star className="w-6 h-6 text-primary fill-primary/30" />
-                </motion.div>
-              ))}
-            </div>
+            {/* Outer halo ring */}
+            <motion.div
+              className="absolute -inset-8 rounded-full"
+              style={{
+                background: `conic-gradient(from 0deg, 
+                  hsl(45, 50%, 50% / 0.1), 
+                  hsl(45, 60%, 55% / 0.2), 
+                  hsl(45, 50%, 50% / 0.1), 
+                  hsl(45, 60%, 55% / 0.2),
+                  hsl(45, 50%, 50% / 0.1))`,
+                boxShadow: finalFormStyle.crownGlow,
+              }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
+            />
             
-            <h2 className="text-3xl font-bold text-foreground mb-3">The Insane State</h2>
-            <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-              You've reached a place few ever see. 500 days of consistent presence.
-              This space is yours now — a monument to your commitment.
-            </p>
-
-            {/* Floating particles */}
-            <div className="relative h-48 w-full max-w-lg mx-auto">
-              {[...Array(12)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-2 h-2 rounded-full bg-primary/40"
-                  style={{
-                    left: `${10 + (i * 7)}%`,
-                    top: `${20 + (i % 3) * 25}%`,
-                  }}
-                  animate={{
-                    y: [0, -20, 0],
-                    opacity: [0.3, 0.7, 0.3],
-                    scale: [1, 1.2, 1],
-                  }}
-                  transition={{
-                    duration: 4 + i * 0.5,
-                    delay: i * 0.2,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                  }}
-                />
-              ))}
-            </div>
-
-            <motion.p 
-              className="text-sm text-muted-foreground/70 italic mt-8"
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 4, repeat: Infinity }}
+            {/* Inner refined core */}
+            <div 
+              className="w-24 h-24 rounded-full flex items-center justify-center"
+              style={{
+                background: `radial-gradient(circle, hsl(45, 40%, 20%) 0%, hsl(45, 30%, 10%) 100%)`,
+                border: `1px solid hsl(45, 50%, 40% / 0.5)`,
+                boxShadow: `inset 0 0 30px hsl(45, 40%, 30% / 0.3), ${finalFormStyle.crownGlow}`,
+              }}
             >
-              "Consistency is the quiet art of becoming."
-            </motion.p>
+              {/* Subtle inner light */}
+              <div 
+                className="w-4 h-4 rounded-full"
+                style={{
+                  background: `radial-gradient(circle, hsl(45, 60%, 60%) 0%, transparent 70%)`,
+                }}
+              />
+            </div>
           </motion.div>
+
+          {/* Floating particles - extremely subtle */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-1 h-1 rounded-full"
+                style={{
+                  left: `${15 + (i * 10)}%`,
+                  top: `${25 + (i % 3) * 20}%`,
+                  background: `hsl(45, 40%, 50% / ${0.2 + (i % 3) * 0.1})`,
+                }}
+                animate={{
+                  y: [0, -30, 0],
+                  opacity: [0.2, 0.4, 0.2],
+                }}
+                transition={{
+                  duration: 8 + i * 2,
+                  delay: i * 0.8,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              />
+            ))}
+          </div>
+
+          {/* No text. Just presence. */}
         </div>
       </motion.div>
     );
   }
 
+  // Just reached - silent transition
   if (hasReached) {
-    // Just reached - show entry
     return (
       <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 3 }}
         className="w-full min-h-[600px] flex items-center justify-center"
       >
-        <div className="text-center floating-panel p-12">
+        <motion.div
+          initial={{ scale: 0.9 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
+          className="relative cursor-pointer"
+          onClick={onExplore}
+        >
+          {/* Halo appears */}
           <motion.div
-            animate={{ rotate: [0, 5, -5, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            <Sparkles className="w-16 h-16 text-primary mx-auto mb-6" />
-          </motion.div>
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 3, delay: 1 }}
+            className="absolute -inset-12 rounded-full"
+            style={{
+              background: `radial-gradient(circle, hsl(45, 50%, 50% / 0.15) 0%, transparent 70%)`,
+            }}
+          />
           
-          <h2 className="text-2xl font-bold text-foreground mb-4">You've Arrived</h2>
-          <p className="text-muted-foreground mb-8 max-w-sm">
-            500 days of consistency. This legendary space is now yours to explore.
-          </p>
-          
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onExplore}
-            className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium"
-          >
-            Enter The Insane State
-          </motion.button>
-        </div>
+          {/* Core element */}
+          <div 
+            className="w-32 h-32 rounded-full"
+            style={{
+              background: `radial-gradient(circle, hsl(45, 35%, 18%) 0%, hsl(45, 25%, 8%) 100%)`,
+              border: `1px solid hsl(45, 50%, 45% / 0.4)`,
+              boxShadow: `0 0 80px hsl(45, 60%, 50% / 0.3)`,
+            }}
+          />
+        </motion.div>
       </motion.div>
     );
   }
 
-  // Distant floating island - gets closer over time
+  // Unreached state - distant, locked, mysterious
+  const opacity = 0.25 + visualProgress * 0.5;
+  const scale = 0.5 + visualProgress * 0.4;
+  const blur = 3 - visualProgress * 2.5;
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="w-full min-h-[600px] flex items-center justify-center relative"
+      className="w-full min-h-[600px] flex items-center justify-center relative pointer-events-none"
     >
-      {/* Atmospheric haze */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-primary/5 to-background/0" />
+      {/* Atmospheric distance haze */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: `radial-gradient(ellipse at center bottom, 
+            hsl(${evolutionStyle.primaryHue}, 20%, 15% / 0.1) 0%, 
+            transparent 60%)`,
+        }}
+      />
       
-      {/* The distant island */}
+      {/* The distant island - no interaction possible */}
       <motion.div
-        style={{ opacity, scale }}
-        className="text-center relative"
+        style={{ 
+          opacity, 
+          scale,
+          filter: `blur(${Math.max(0, blur)}px)`,
+        }}
+        className="relative"
       >
-        {/* Ethereal glow */}
+        {/* Subtle evolving glow - changes every 10 days */}
         <motion.div
-          className="absolute inset-0 -z-10 blur-3xl"
+          className="absolute -inset-8 rounded-full -z-10"
           style={{
-            background: `radial-gradient(circle, hsl(var(--primary) / ${visualProgress * 0.3}) 0%, transparent 70%)`,
+            background: `radial-gradient(circle, 
+              hsl(${evolutionStyle.primaryHue}, ${evolutionStyle.saturation}%, ${evolutionStyle.lightness}% / ${evolutionStyle.glowOpacity}) 0%, 
+              transparent 70%)`,
+            boxShadow: `0 0 ${evolutionStyle.glowSize}px hsl(${evolutionStyle.primaryHue}, ${evolutionStyle.saturation}%, ${evolutionStyle.lightness}% / ${evolutionStyle.glowOpacity * 0.5})`,
           }}
           animate={{
-            scale: [1, 1.1, 1],
+            scale: [1, 1.05, 1],
           }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         />
         
-        {/* Island content */}
+        {/* Core form - evolves subtly */}
         <motion.div
-          animate={{ y: [0, -10, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="floating-panel p-8 border-primary/20"
-        >
-          <Sparkles className="w-12 h-12 text-primary/60 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-foreground/80 mb-2">The Insane State</h2>
-          <p className="text-sm text-muted-foreground/60 max-w-xs">
-            A legendary destination for those who persist. 
-            It draws closer with each consistent day.
-          </p>
-        </motion.div>
-        
-        {/* Subtle hint - no numbers */}
-        <motion.p
-          className="mt-6 text-xs text-muted-foreground/40 italic"
-          animate={{ opacity: [0.3, 0.6, 0.3] }}
-          transition={{ duration: 4, repeat: Infinity }}
-        >
-          Keep showing up...
-        </motion.p>
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="w-20 h-20 rounded-full"
+          style={{
+            background: `radial-gradient(circle, 
+              hsl(${evolutionStyle.primaryHue}, ${evolutionStyle.saturation * 0.5}%, 15%) 0%, 
+              hsl(${evolutionStyle.primaryHue}, ${evolutionStyle.saturation * 0.3}%, 8%) 100%)`,
+            border: `1px solid hsl(${evolutionStyle.primaryHue}, ${evolutionStyle.saturation}%, ${evolutionStyle.lightness}% / ${evolutionStyle.borderOpacity})`,
+          }}
+        />
       </motion.div>
     </motion.div>
   );

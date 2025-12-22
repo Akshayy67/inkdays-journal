@@ -1,134 +1,104 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Wind, Circle, Waves } from 'lucide-react';
-
-type FocusGameType = 'breathing' | 'stillness' | 'patterns';
 
 interface FocusZoneProps {
   onBack: () => void;
 }
 
-const BreathingGame: React.FC = () => {
-  const [phase, setPhase] = useState<'inhale' | 'hold' | 'exhale'>('inhale');
-  
+const FocusZone: React.FC<FocusZoneProps> = ({ onBack }) => {
+  const [isActive, setIsActive] = useState(false);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+  const [isInside, setIsInside] = useState(true);
+  const [movementIntensity, setMovementIntensity] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const lastPosRef = useRef({ x: 0, y: 0 });
+  const movementHistoryRef = useRef<number[]>([]);
+  const boundaryRadius = 120;
+  const centerRef = useRef({ x: 0, y: 0 });
+
+  // Calculate center on mount and resize
   useEffect(() => {
-    const cycle = () => {
-      setPhase('inhale');
-      setTimeout(() => setPhase('hold'), 4000);
-      setTimeout(() => setPhase('exhale'), 7000);
+    const updateCenter = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        centerRef.current = {
+          x: rect.width / 2,
+          y: rect.height / 2,
+        };
+      }
     };
+    updateCenter();
+    window.addEventListener('resize', updateCenter);
+    return () => window.removeEventListener('resize', updateCenter);
+  }, [isActive]);
+
+  // Track mouse movement
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isActive || !containerRef.current) return;
     
-    cycle();
-    const interval = setInterval(cycle, 11000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const scale = phase === 'inhale' ? 1.4 : phase === 'hold' ? 1.4 : 0.8;
-  const opacity = phase === 'hold' ? 0.8 : 1;
-
-  return (
-    <div className="flex flex-col items-center justify-center h-[400px]">
-      <motion.div
-        animate={{ scale, opacity }}
-        transition={{ duration: phase === 'inhale' ? 4 : phase === 'hold' ? 0.2 : 4, ease: "easeInOut" }}
-        className="w-32 h-32 rounded-full border-2 border-primary/40 flex items-center justify-center"
-      >
-        <motion.div
-          animate={{ scale: scale * 0.7 }}
-          transition={{ duration: phase === 'inhale' ? 4 : phase === 'hold' ? 0.2 : 4, ease: "easeInOut" }}
-          className="w-16 h-16 rounded-full bg-primary/20"
-        />
-      </motion.div>
-      
-      <motion.p 
-        key={phase}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mt-8 text-lg text-muted-foreground capitalize"
-      >
-        {phase === 'hold' ? 'Hold...' : phase === 'inhale' ? 'Breathe in...' : 'Breathe out...'}
-      </motion.p>
-    </div>
-  );
-};
-
-const StillnessGame: React.FC = () => {
-  const [circles, setCircles] = useState<{ id: number; x: number; y: number }[]>([]);
-  
-  const addCircle = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
+    const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    setCircles(prev => [...prev, { id: Date.now(), x, y }]);
+    setCursorPos({ x, y });
     
-    setTimeout(() => {
-      setCircles(prev => prev.filter(c => c.id !== Date.now()));
-    }, 4000);
+    // Calculate distance from center
+    const dx = x - centerRef.current.x;
+    const dy = y - centerRef.current.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    // Check if inside boundary
+    const inside = distance <= boundaryRadius;
+    setIsInside(inside);
+    
+    // Calculate movement intensity (jitter detection)
+    const moveDelta = Math.sqrt(
+      Math.pow(x - lastPosRef.current.x, 2) + 
+      Math.pow(y - lastPosRef.current.y, 2)
+    );
+    lastPosRef.current = { x, y };
+    
+    // Track movement history
+    movementHistoryRef.current.push(moveDelta);
+    if (movementHistoryRef.current.length > 10) {
+      movementHistoryRef.current.shift();
+    }
+    
+    // Average recent movement
+    const avgMovement = movementHistoryRef.current.reduce((a, b) => a + b, 0) / 
+                        movementHistoryRef.current.length;
+    setMovementIntensity(Math.min(avgMovement / 5, 1));
+    
+    // End session naturally if outside boundary or too much jitter
+    if (!inside || avgMovement > 15) {
+      // Gentle fade out
+      setTimeout(() => {
+        setIsActive(false);
+        setMovementIntensity(0);
+        movementHistoryRef.current = [];
+      }, 300);
+    }
+  }, [isActive]);
+
+  // Start session
+  const handleStart = useCallback(() => {
+    setIsActive(true);
+    setIsInside(true);
+    setMovementIntensity(0);
+    movementHistoryRef.current = [];
   }, []);
 
-  return (
-    <div 
-      onClick={addCircle}
-      className="relative w-full h-[400px] rounded-xl bg-secondary/30 overflow-hidden cursor-pointer"
-    >
-      <AnimatePresence>
-        {circles.map(circle => (
-          <motion.div
-            key={circle.id}
-            initial={{ scale: 0, opacity: 0.8 }}
-            animate={{ scale: 4, opacity: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 4, ease: "easeOut" }}
-            className="absolute w-8 h-8 rounded-full border border-primary/40"
-            style={{ left: circle.x - 16, top: circle.y - 16 }}
-          />
-        ))}
-      </AnimatePresence>
-      
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <p className="text-muted-foreground/60 text-sm">Click anywhere to create ripples</p>
-      </div>
-    </div>
-  );
-};
-
-const PatternsGame: React.FC = () => {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const gridSize = 6;
-  
-  return (
-    <div className="flex flex-col items-center justify-center h-[400px]">
-      <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)` }}>
-        {[...Array(gridSize * gridSize)].map((_, i) => (
-          <motion.div
-            key={i}
-            onHoverStart={() => setHoveredIndex(i)}
-            onHoverEnd={() => setHoveredIndex(null)}
-            animate={{
-              scale: hoveredIndex === i ? 1.2 : 1,
-              backgroundColor: hoveredIndex === i 
-                ? 'hsl(var(--primary) / 0.4)' 
-                : 'hsl(var(--secondary))',
-            }}
-            transition={{ duration: 0.3 }}
-            className="w-8 h-8 rounded-sm cursor-pointer"
-          />
-        ))}
-      </div>
-      <p className="mt-6 text-muted-foreground/60 text-sm">Hover to explore patterns</p>
-    </div>
-  );
-};
-
-const FocusZone: React.FC<FocusZoneProps> = ({ onBack }) => {
-  const [activeGame, setActiveGame] = useState<FocusGameType | null>(null);
-
-  const games: { type: FocusGameType; icon: React.ComponentType<any>; name: string; description: string }[] = [
-    { type: 'breathing', icon: Wind, name: 'Breathing', description: 'Slow, guided breath cycles' },
-    { type: 'stillness', icon: Waves, name: 'Stillness', description: 'Create gentle ripples' },
-    { type: 'patterns', icon: Circle, name: 'Patterns', description: 'Explore subtle movements' },
-  ];
+  // Boundary color based on stillness
+  const getBoundaryColor = () => {
+    if (!isActive) return 'hsl(var(--primary) / 0.2)';
+    if (!isInside) return 'hsl(var(--muted) / 0.3)';
+    
+    // Green = still, shifts to muted as movement increases
+    const stillness = 1 - movementIntensity;
+    if (stillness > 0.7) return `hsl(150, 40%, 45% / ${0.3 + stillness * 0.2})`;
+    if (stillness > 0.4) return `hsl(175, 35%, 45% / 0.35)`;
+    return `hsl(var(--muted-foreground) / 0.25)`;
+  };
 
   return (
     <motion.div 
@@ -138,69 +108,95 @@ const FocusZone: React.FC<FocusZoneProps> = ({ onBack }) => {
       className="w-full max-w-2xl mx-auto"
     >
       <div className="floating-panel p-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-semibold text-foreground mb-2">Focus Zone</h2>
-          <p className="text-muted-foreground text-sm">Minimal exercises for calm concentration</p>
+        {/* Minimal header */}
+        <div className="text-center mb-6">
+          <h2 className="text-lg font-medium text-foreground/80">Stillness</h2>
         </div>
 
-        {/* Game selection or active game */}
-        <AnimatePresence mode="wait">
-          {activeGame ? (
-            <motion.div
-              key="game"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              {activeGame === 'breathing' && <BreathingGame />}
-              {activeGame === 'stillness' && <StillnessGame />}
-              {activeGame === 'patterns' && <PatternsGame />}
-              
-              <button
-                onClick={() => setActiveGame(null)}
-                className="w-full mt-6 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                ← Back to exercises
-              </button>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="menu"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="grid gap-4"
-            >
-              {games.map((game, i) => (
-                <motion.button
-                  key={game.type}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  onClick={() => setActiveGame(game.type)}
-                  className="flex items-center gap-4 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors text-left group"
-                >
-                  <game.icon className="w-6 h-6 text-primary/60 group-hover:text-primary transition-colors" />
-                  <div>
-                    <p className="font-medium text-foreground">{game.name}</p>
-                    <p className="text-sm text-muted-foreground">{game.description}</p>
-                  </div>
-                </motion.button>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Gentle reminder */}
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center text-xs text-muted-foreground/60 mt-8 italic"
+        {/* The practice space */}
+        <div 
+          ref={containerRef}
+          onMouseMove={handleMouseMove}
+          onClick={!isActive ? handleStart : undefined}
+          className="relative h-[400px] rounded-xl bg-secondary/20 overflow-hidden cursor-none"
         >
-          No scores. No timers. Just presence.
-        </motion.p>
+          <AnimatePresence>
+            {!isActive ? (
+              <motion.div
+                key="start"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 flex items-center justify-center cursor-pointer"
+              >
+                <div className="text-center">
+                  <motion.div
+                    className="w-16 h-16 rounded-full border border-primary/30 mx-auto mb-4"
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 4, repeat: Infinity }}
+                  />
+                  <p className="text-sm text-muted-foreground/60">Enter to begin</p>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="active"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0"
+              >
+                {/* Soft circular boundary */}
+                <motion.div
+                  className="absolute rounded-full"
+                  style={{
+                    width: boundaryRadius * 2,
+                    height: boundaryRadius * 2,
+                    left: '50%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    border: `2px solid ${getBoundaryColor()}`,
+                    transition: 'border-color 0.5s ease',
+                  }}
+                  animate={{
+                    scale: isInside ? [1, 1.01, 1] : 1,
+                  }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                />
+                
+                {/* Inner stillness indicator */}
+                <motion.div
+                  className="absolute rounded-full"
+                  style={{
+                    width: 8 + (1 - movementIntensity) * 20,
+                    height: 8 + (1 - movementIntensity) * 20,
+                    left: '50%',
+                    top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    background: `radial-gradient(circle, 
+                      hsl(150, ${30 + (1 - movementIntensity) * 30}%, 50% / ${0.2 + (1 - movementIntensity) * 0.3}) 0%, 
+                      transparent 70%)`,
+                    transition: 'all 0.3s ease',
+                  }}
+                />
+                
+                {/* Cursor visualization - subtle */}
+                <motion.div
+                  className="absolute w-3 h-3 rounded-full pointer-events-none"
+                  style={{
+                    left: cursorPos.x - 6,
+                    top: cursorPos.y - 6,
+                    background: `hsl(var(--foreground) / ${0.3 - movementIntensity * 0.2})`,
+                    transition: 'background 0.2s ease',
+                  }}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* No instructions, no evaluation - just space */}
+        <div className="h-8" />
       </div>
     </motion.div>
   );
