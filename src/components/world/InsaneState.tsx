@@ -20,6 +20,9 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
     return 1 - Math.pow(1 - ratio, 4);
   }, [progress.currentDay, progress.targetDays]);
 
+  // Days remaining
+  const daysRemaining = Math.max(0, progress.targetDays - progress.currentDay);
+
   // Journey ideas based on current tier
   const journeyInsight = useMemo(() => {
     if (evolutionTier < 5) return "The journey begins with small steps...";
@@ -107,13 +110,31 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
         hasReached={false} 
       />
       
+      {/* Days remaining counter */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="text-center mt-4"
+      >
+        <div className="inline-flex items-center gap-3 px-5 py-3 rounded-xl bg-card/80 backdrop-blur-sm border border-border">
+          <span className="text-3xl font-bold text-foreground">{daysRemaining}</span>
+          <div className="text-left">
+            <p className="text-sm font-medium text-foreground">days remaining</p>
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground/60">
+              {progress.currentDay} of {progress.targetDays} completed
+            </p>
+          </div>
+        </div>
+      </motion.div>
+      
       {/* Journey insights - no numbers, just feelings */}
       {journeyInsight && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="text-center mt-6"
+          className="text-center mt-4"
         >
           <p className="text-muted-foreground dark:text-muted-foreground/50 text-sm italic">
             {journeyInsight}
