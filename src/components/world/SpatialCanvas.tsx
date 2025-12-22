@@ -309,6 +309,45 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
           </div>
         </div>
 
+        {/* Zone: Milestones (Right of Review) */}
+        <div 
+          className="absolute"
+          style={{ 
+            left: ZONE_POSITIONS.milestones.x, 
+            top: ZONE_POSITIONS.milestones.y 
+          }}
+        >
+          <div className="w-[600px]">
+            {renderZone('milestones')}
+          </div>
+        </div>
+
+        {/* Zone: Time Capsules (Right of Center) */}
+        <div 
+          className="absolute"
+          style={{ 
+            left: ZONE_POSITIONS['time-capsules'].x, 
+            top: ZONE_POSITIONS['time-capsules'].y 
+          }}
+        >
+          <div className="w-[600px]">
+            {renderZone('time-capsules')}
+          </div>
+        </div>
+
+        {/* Zone: Flame Shrine (Right of Recovery) */}
+        <div 
+          className="absolute"
+          style={{ 
+            left: ZONE_POSITIONS['flame-shrine'].x, 
+            top: ZONE_POSITIONS['flame-shrine'].y 
+          }}
+        >
+          <div className="w-[600px]">
+            {renderZone('flame-shrine')}
+          </div>
+        </div>
+
         {/* Visual connectors between zones */}
         <svg 
           className="absolute pointer-events-none"

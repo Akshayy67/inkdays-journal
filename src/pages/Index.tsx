@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AppState, TimeOfDay, Stroke, RecoveryState, RoutineType } from '@/types/habit';
-import { ZoneType, WorldState, defaultWorldState } from '@/types/world';
+import { ZoneType, WorldState, defaultWorldState, MilestoneUnlocks } from '@/types/world';
 import { loadState, saveState, addHabit, deleteHabit, updateSettings, addRoutine, toggleHabitExpanded, setActiveRoutine, addReflection, markCelebrationShown } from '@/lib/storage';
-import { loadWorldState, saveWorldState, updateJournalState, updateInsaneProgress, calculateConsistencyDays } from '@/lib/worldStorage';
+import { loadWorldState, saveWorldState, updateJournalState, updateInsaneProgress, updateMilestoneUnlocks, addTimeCapsule, calculateConsistencyDays } from '@/lib/worldStorage';
 import { getDateKey, getDatesInRange } from '@/lib/habitUtils';
 import SpatialCanvas from '@/components/world/SpatialCanvas';
 import WorldNavigator from '@/components/world/WorldNavigator';
@@ -12,6 +12,9 @@ import InsaneState from '@/components/world/InsaneState';
 import FocusZone from '@/components/world/FocusZone';
 import JournalWorld from '@/components/world/JournalWorld';
 import RecoveryZone from '@/components/world/RecoveryZone';
+import MilestonesZone from '@/components/world/MilestonesZone';
+import TimeCapsuleZone from '@/components/world/TimeCapsuleZone';
+import FlameShrineZone from '@/components/world/FlameShrineZone';
 import HabitGridComponent from '@/components/HabitGrid';
 import Toolbar from '@/components/Toolbar';
 import AddHabitModal from '@/components/AddHabitModal';
@@ -153,7 +156,20 @@ const Index: React.FC = () => {
     (window as any).__navigateToZone?.(zone);
   }, []);
 
+  const handleUpdateUnlocks = useCallback((updates: Partial<MilestoneUnlocks>) => {
+    const newWorld = updateMilestoneUnlocks(worldState, updates);
+    setWorldState(newWorld);
+  }, [worldState]);
+
+  const handleAddTimeCapsule = useCallback((message: string) => {
+    const newWorld = addTimeCapsule(worldState, message);
+    setWorldState(newWorld);
+    toast.success('Time capsule sealed!');
+  }, [worldState]);
+
   const renderZone = useCallback((zone: ZoneType) => {
+    const hasReached = worldState.insaneProgress.currentDay >= 50;
+    
     switch (zone) {
       case 'review':
         return <ReviewIsland routine={activeRoutine} allRoutines={state?.routines || []} />;
@@ -187,10 +203,38 @@ const Index: React.FC = () => {
             onContinue={() => {}}
           />
         );
+      case 'milestones':
+        return (
+          <MilestonesZone
+            currentDay={worldState.insaneProgress.currentDay}
+            unlocks={worldState.insaneProgress.unlocks}
+            onUpdateUnlocks={handleUpdateUnlocks}
+            onBack={() => handleNavigate('center')}
+          />
+        );
+      case 'time-capsules':
+        return (
+          <TimeCapsuleZone
+            capsules={worldState.insaneProgress.timeCapsules}
+            currentDay={worldState.insaneProgress.currentDay}
+            hasReached={hasReached}
+            onAddCapsule={handleAddTimeCapsule}
+            onBack={() => handleNavigate('center')}
+          />
+        );
+      case 'flame-shrine':
+        return (
+          <FlameShrineZone
+            flameStrength={worldState.insaneProgress.flameStrength}
+            consecutiveStreak={worldState.insaneProgress.consecutiveStreak}
+            hasReached={hasReached}
+            onBack={() => handleNavigate('center')}
+          />
+        );
       default:
         return null;
     }
-  }, [activeRoutine, state?.routines, worldState, handleNavigate]);
+  }, [activeRoutine, state?.routines, worldState, handleNavigate, handleUpdateUnlocks, handleAddTimeCapsule]);
 
   if (isLoading || !state) {
     return (

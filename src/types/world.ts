@@ -1,4 +1,4 @@
-export type ZoneType = 'center' | 'review' | 'insane' | 'focus' | 'journal' | 'recovery' | 'zen-garden';
+export type ZoneType = 'center' | 'review' | 'insane' | 'focus' | 'journal' | 'recovery' | 'zen-garden' | 'milestones' | 'time-capsules' | 'flame-shrine';
 
 export interface WorldZone {
   id: ZoneType;
@@ -82,6 +82,9 @@ export const ZONE_POSITIONS: Record<ZoneType, { x: number; y: number }> = {
   journal: { x: -2000, y: 0 },
   recovery: { x: 0, y: 1500 },
   'zen-garden': { x: 0, y: -7600 },
+  'milestones': { x: 2200, y: -1400 },
+  'time-capsules': { x: 2200, y: 0 },
+  'flame-shrine': { x: 2200, y: 1400 },
 };
 
 export const defaultMilestoneUnlocks: MilestoneUnlocks = {
