@@ -41,7 +41,7 @@ const SubHabitRow: React.FC<SubHabitRowProps> = ({
       exit={{ opacity: 0, height: 0 }}
       className="flex items-center gap-2 pl-6 border-l border-border/30 ml-4"
     >
-      <div className="min-w-[120px] max-w-[180px] flex-shrink-0 flex items-center gap-2 pr-2">
+      <div className="w-[200px] flex-shrink-0 flex items-center gap-2 pr-2">
         <button
           onClick={() => onDeleteSubHabit(parentHabitId, subHabit.id)}
           className="opacity-0 group-hover:opacity-100 hover:opacity-100 p-1 rounded text-muted-foreground hover:text-destructive transition-all flex-shrink-0"
@@ -138,7 +138,7 @@ const HabitRow: React.FC<HabitRowProps> = ({
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-2"
       >
-        <div className="min-w-[140px] max-w-[200px] flex-shrink-0 flex items-center gap-1 pr-2">
+        <div className="w-[200px] flex-shrink-0 flex items-center gap-1 pr-2">
           {hasSubHabits && (
             <button
               onClick={() => onToggleExpanded(habit.id)}
@@ -268,7 +268,7 @@ const HabitGridComponent: React.FC<HabitGridProps> = ({
         <div className="inline-block min-w-max">
           {/* Header with day labels */}
           <div className="flex items-end gap-2 mb-3">
-            <div className="w-32 flex-shrink-0" />
+            <div className="w-[200px] flex-shrink-0" />
             <div className="flex gap-1">
               {dates.map(dateKey => {
                 const dayNum = getDayNumber(dateKey, routine.startDate);
