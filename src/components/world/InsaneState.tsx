@@ -1,20 +1,15 @@
 import React, { useMemo } from 'react';
-import { InsaneStateProgress, MilestoneUnlocks } from '@/types/world';
+import { InsaneStateProgress } from '@/types/world';
 import { motion } from 'framer-motion';
 import InsaneState3D from './InsaneState3D';
-import MilestoneRewards from './MilestoneRewards';
-import TimeCapsules from './TimeCapsules';
 import DailyWisdom from './DailyWisdom';
-import StreakFlame from './StreakFlame';
 
 interface InsaneStateProps {
   progress: InsaneStateProgress;
   onExplore: () => void;
-  onUpdateUnlocks?: (updates: Partial<MilestoneUnlocks>) => void;
-  onAddTimeCapsule?: (message: string) => void;
 }
 
-const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore, onUpdateUnlocks, onAddTimeCapsule }) => {
+const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore }) => {
   const hasReached = progress.currentDay >= progress.targetDays;
   const evolutionTier = Math.min(Math.floor(progress.currentDay / 10), 5);
   
@@ -46,26 +41,16 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore, onUpdate
         <div className="max-w-2xl mx-auto space-y-8 px-4">
           <DailyWisdom currentDay={progress.currentDay} />
           
-          <div className="flex justify-center">
-            <StreakFlame 
-              flameStrength={100} 
-              consecutiveStreak={progress.consecutiveStreak} 
-              hasReached={true} 
-            />
-          </div>
-          
-          <TimeCapsules 
-            capsules={progress.timeCapsules} 
-            currentDay={progress.currentDay} 
-            hasReached={true}
-            onAddCapsule={onAddTimeCapsule || (() => {})}
-          />
-          
-          <MilestoneRewards 
-            currentDay={progress.currentDay} 
-            unlocks={progress.unlocks} 
-            onUpdateUnlocks={onUpdateUnlocks || (() => {})} 
-          />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/30"
+          >
+            <p className="text-muted-foreground text-sm">
+              Explore the <strong>Milestone Rewards</strong>, <strong>Time Capsules</strong>, and <strong>Flame Shrine</strong> 
+              {' '}using the <strong>Others</strong> button in the navigator.
+            </p>
+          </motion.div>
         </div>
       </motion.div>
     );
@@ -113,26 +98,16 @@ const InsaneState: React.FC<InsaneStateProps> = ({ progress, onExplore, onUpdate
       <div className="max-w-2xl mx-auto space-y-6 px-4">
         <DailyWisdom currentDay={progress.currentDay} />
         
-        <div className="flex justify-center">
-          <StreakFlame 
-            flameStrength={progress.flameStrength} 
-            consecutiveStreak={progress.consecutiveStreak} 
-            hasReached={false} 
-          />
-        </div>
-        
-        <TimeCapsules 
-          capsules={progress.timeCapsules} 
-          currentDay={progress.currentDay} 
-          hasReached={false}
-          onAddCapsule={onAddTimeCapsule || (() => {})}
-        />
-        
-        <MilestoneRewards 
-          currentDay={progress.currentDay} 
-          unlocks={progress.unlocks} 
-          onUpdateUnlocks={onUpdateUnlocks || (() => {})} 
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="text-center p-4 rounded-xl bg-secondary/50 border border-border"
+        >
+          <p className="text-muted-foreground text-sm">
+            Use the <strong>Others</strong> button to explore Milestone Rewards, Time Capsules, and your Flame Shrine.
+          </p>
+        </motion.div>
       </div>
     </motion.div>
   );
