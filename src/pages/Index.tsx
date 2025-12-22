@@ -5,8 +5,8 @@ import { loadState, saveState, addHabit, deleteHabit, updateSettings, addRoutine
 import { loadWorldState, saveWorldState, updateJournalState, updateInsaneProgress, calculateConsistencyDays } from '@/lib/worldStorage';
 import { getDateKey, getDatesInRange } from '@/lib/habitUtils';
 import SpatialCanvas from '@/components/world/SpatialCanvas';
-import WorldNavigator from '@/components/world/WorldNavigator';
 import WorldMap from '@/components/world/WorldMap';
+import AmbientHint from '@/components/world/AmbientHint';
 import ReviewIsland from '@/components/world/ReviewIsland';
 import InsaneState from '@/components/world/InsaneState';
 import FocusZone from '@/components/world/FocusZone';
@@ -247,12 +247,10 @@ const Index: React.FC = () => {
         onNavigate={handleNavigate}
       />
 
-      {/* World Navigator */}
-      <WorldNavigator 
-        currentZone={worldState.currentZone} 
-        onNavigate={handleNavigate}
-        canAccessFocus={worldState.visitedZones.includes('review')}
-        insaneReached={worldState.insaneProgress.currentDay >= 500}
+      {/* Ambient hints - subtle particles drifting upward */}
+      <AmbientHint 
+        insaneProgress={worldState.insaneProgress.currentDay}
+        currentZone={worldState.currentZone}
       />
 
       {/* Toolbar */}
