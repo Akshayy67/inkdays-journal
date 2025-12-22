@@ -49,10 +49,10 @@ const AddRoutineModal: React.FC<AddRoutineModalProps> = ({ isOpen, onClose, onAd
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md"
+            className="fixed inset-4 z-50 flex items-center justify-center pointer-events-none"
           >
-            <div className="floating-panel p-6">
-              <div className="flex items-center justify-between mb-6">
+            <div className="floating-panel p-5 w-full max-w-md max-h-[90vh] overflow-y-auto pointer-events-auto">
+              <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold text-foreground">New Routine</h2>
                 <button
                   onClick={onClose}
@@ -63,7 +63,7 @@ const AddRoutineModal: React.FC<AddRoutineModalProps> = ({ isOpen, onClose, onAd
               </div>
 
               <form onSubmit={handleSubmit}>
-                <div className="mb-6">
+                <div className="mb-4">
                   <label className="block text-sm text-muted-foreground mb-2">
                     Routine Name
                   </label>
@@ -71,24 +71,24 @@ const AddRoutineModal: React.FC<AddRoutineModalProps> = ({ isOpen, onClose, onAd
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g., Morning Routine, 30-Day Challenge..."
-                    className="w-full bg-input border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    placeholder="e.g., Morning Routine..."
+                    className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
                     autoFocus
                   />
                 </div>
 
-                <div className="mb-6">
-                  <label className="block text-sm text-muted-foreground mb-3">
+                <div className="mb-4">
+                  <label className="block text-sm text-muted-foreground mb-2">
                     Duration
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-4 gap-1.5">
                     {durationOptions.map(option => (
                       <button
                         key={option.value}
                         type="button"
                         onClick={() => setDuration(option.value)}
                         className={`
-                          py-3 rounded-lg border transition-all text-sm font-medium
+                          py-2 rounded-lg border transition-all text-xs font-medium
                           ${duration === option.value
                             ? 'border-primary/50 bg-primary/10 text-primary'
                             : 'border-border bg-secondary text-muted-foreground hover:text-foreground'
@@ -107,15 +107,15 @@ const AddRoutineModal: React.FC<AddRoutineModalProps> = ({ isOpen, onClose, onAd
                       placeholder="Enter number of days"
                       min="1"
                       max="365"
-                      className="w-full mt-3 bg-input border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                      className="w-full mt-2 bg-input border border-border rounded-lg px-3 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
                     />
                   )}
                 </div>
 
-                <div className="mb-6">
+                <div className="mb-4">
                   <label className="block text-sm text-muted-foreground mb-2">
                     <span className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
+                      <Calendar className="w-3.5 h-3.5" />
                       Start Date
                     </span>
                   </label>
@@ -123,24 +123,24 @@ const AddRoutineModal: React.FC<AddRoutineModalProps> = ({ isOpen, onClose, onAd
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full bg-input border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    className="w-full bg-input border border-border rounded-lg px-3 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
                   />
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-2 pt-2">
                   <button
                     type="button"
                     onClick={onClose}
-                    className="flex-1 py-3 rounded-lg border border-border bg-secondary text-foreground hover:bg-muted transition-colors"
+                    className="flex-1 py-2.5 rounded-lg border border-border bg-secondary text-foreground hover:bg-muted transition-colors text-sm"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={!name.trim() || (duration === -1 && !customDuration)}
-                    className="flex-1 py-3 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
                   >
-                    Create Routine
+                    Create
                   </button>
                 </div>
               </form>
