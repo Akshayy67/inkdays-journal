@@ -41,14 +41,14 @@ const SubHabitRow: React.FC<SubHabitRowProps> = ({
       exit={{ opacity: 0, height: 0 }}
       className="flex items-center gap-2 pl-6 border-l border-border/30 ml-4"
     >
-      <div className="w-28 flex-shrink-0 flex items-center gap-2 pr-2">
+      <div className="min-w-[120px] max-w-[180px] flex-shrink-0 flex items-center gap-2 pr-2">
         <button
           onClick={() => onDeleteSubHabit(parentHabitId, subHabit.id)}
-          className="opacity-0 group-hover:opacity-100 hover:opacity-100 p-1 rounded text-muted-foreground hover:text-destructive transition-all"
+          className="opacity-0 group-hover:opacity-100 hover:opacity-100 p-1 rounded text-muted-foreground hover:text-destructive transition-all flex-shrink-0"
         >
           <Trash2 className="w-2.5 h-2.5" />
         </button>
-        <span className="text-xs text-muted-foreground truncate">{subHabit.name}</span>
+        <span className="text-xs text-muted-foreground whitespace-nowrap">{subHabit.name}</span>
       </div>
       
       <div className="flex gap-1 flex-shrink-0">
@@ -138,11 +138,11 @@ const HabitRow: React.FC<HabitRowProps> = ({
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-2"
       >
-        <div className="w-32 flex-shrink-0 flex items-center gap-1 pr-2">
+        <div className="min-w-[140px] max-w-[200px] flex-shrink-0 flex items-center gap-1 pr-2">
           {hasSubHabits && (
             <button
               onClick={() => onToggleExpanded(habit.id)}
-              className="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors"
+              className="p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
             >
               {habit.isExpanded ? (
                 <ChevronDown className="w-3 h-3" />
@@ -151,15 +151,15 @@ const HabitRow: React.FC<HabitRowProps> = ({
               )}
             </button>
           )}
-          {!hasSubHabits && <div className="w-4" />}
+          {!hasSubHabits && <div className="w-4 flex-shrink-0" />}
           <button
             onClick={() => onDeleteHabit(habit.id)}
-            className="opacity-0 group-hover:opacity-100 hover:opacity-100 p-1 rounded text-muted-foreground hover:text-destructive transition-all"
+            className="opacity-0 group-hover:opacity-100 hover:opacity-100 p-1 rounded text-muted-foreground hover:text-destructive transition-all flex-shrink-0"
           >
             <Trash2 className="w-3 h-3" />
           </button>
-          {getTimeIcon()}
-          <span className="text-sm text-foreground truncate font-medium">{habit.name}</span>
+          <span className="flex-shrink-0">{getTimeIcon()}</span>
+          <span className="text-sm text-foreground font-medium whitespace-nowrap">{habit.name}</span>
         </div>
         
         <div className="flex gap-1 flex-shrink-0">

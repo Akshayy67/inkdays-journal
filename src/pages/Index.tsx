@@ -26,6 +26,7 @@ const Index: React.FC = () => {
   const [showRecovery, setShowRecovery] = useState(false);
   const [recoveryState, setRecoveryState] = useState<RecoveryState | null>(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showMiniCelebration, setShowMiniCelebration] = useState(false);
 
   const activeRoutine = state?.routines.find(r => r.id === state.activeRoutineId) || state?.routines[0];
 
@@ -98,17 +99,28 @@ const Index: React.FC = () => {
     const habit = routine.habits.find(h => h.id === habitId);
     if (!habit) return;
 
+    // Check if this is a new completion (not erasing)
+    const wasCompleted = subHabitId 
+      ? habit.subHabits?.find(sh => sh.id === subHabitId)?.cells[dateKey]?.completed
+      : habit.cells[dateKey]?.completed;
+    const isNowCompleted = strokes.length > 0;
+
     if (subHabitId) {
       const subHabit = habit.subHabits?.find(sh => sh.id === subHabitId);
       if (subHabit) {
-        subHabit.cells[dateKey] = { strokes, completed: strokes.length > 0, strokeDensity: density, completedAt: strokes.length > 0 ? Date.now() : undefined, timeOfDay: subHabit.timeOfDay };
+        subHabit.cells[dateKey] = { strokes, completed: isNowCompleted, strokeDensity: density, completedAt: isNowCompleted ? Date.now() : undefined, timeOfDay: subHabit.timeOfDay };
       }
     } else {
-      habit.cells[dateKey] = { strokes, completed: strokes.length > 0, strokeDensity: density, completedAt: strokes.length > 0 ? Date.now() : undefined, timeOfDay: habit.timeOfDay };
+      habit.cells[dateKey] = { strokes, completed: isNowCompleted, strokeDensity: density, completedAt: isNowCompleted ? Date.now() : undefined, timeOfDay: habit.timeOfDay };
     }
     
     await saveState(newState);
     setState(newState);
+
+    // Trigger mini celebration on new completion
+    if (!wasCompleted && isNowCompleted) {
+      setShowMiniCelebration(true);
+    }
   }, [state, activeRoutine]);
 
   const handleAddHabit = useCallback(async (name: string, timeOfDay: TimeOfDay, parentHabitId?: string, intent?: string) => {
@@ -246,6 +258,7 @@ const Index: React.FC = () => {
       <WeeklyReflection isOpen={showReflection} onClose={() => setShowReflection(false)} weekNumber={currentWeek} existingReflection={activeRoutine?.reflections?.find(r => r.weekNumber === currentWeek)} onSave={handleSaveReflection} />
       {recoveryState && <GentleRecovery isOpen={showRecovery} onClose={() => setShowRecovery(false)} recoveryState={recoveryState} onRestart={() => { setShowRecovery(false); }} onContinue={() => setShowRecovery(false)} />}
       <ConfettiCelebration isActive={showCelebration} onComplete={handleCelebrationComplete} />
+      <ConfettiCelebration isActive={showMiniCelebration} onComplete={() => setShowMiniCelebration(false)} mini />
 
       <div className="fixed bottom-6 right-6 z-40">
         <div className="text-xs text-muted-foreground space-y-1 text-right opacity-50 hover:opacity-100 transition-opacity">
