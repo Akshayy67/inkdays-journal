@@ -1,8 +1,27 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { AppState, TimeOfDay, Stroke, RecoveryState, RoutineType } from '@/types/habit';
 import { ZoneType, WorldState, defaultWorldState, MilestoneUnlocks } from '@/types/world';
-import { loadState, saveState, addHabit, deleteHabit, updateSettings, addRoutine, toggleHabitExpanded, setActiveRoutine, addReflection, markCelebrationShown } from '@/lib/storage';
-import { loadWorldState, saveWorldState, updateJournalState, updateInsaneProgress, updateMilestoneUnlocks, addTimeCapsule, calculateConsistencyDays } from '@/lib/worldStorage';
+import {
+  loadState,
+  saveState,
+  addHabit,
+  deleteHabit,
+  updateSettings,
+  addRoutine,
+  toggleHabitExpanded,
+  setActiveRoutine,
+  addReflection,
+  markCelebrationShown,
+} from '@/lib/storage';
+import {
+  loadWorldState,
+  saveWorldState,
+  updateJournalState,
+  updateInsaneProgress,
+  updateMilestoneUnlocks,
+  addTimeCapsule,
+  calculateConsistencyDays,
+} from '@/lib/worldStorage';
 import { getDateKey, getDatesInRange } from '@/lib/habitUtils';
 import SpatialCanvas from '@/components/world/SpatialCanvas';
 import WorldNavigator from '@/components/world/WorldNavigator';
@@ -34,7 +53,7 @@ const Index: React.FC = () => {
   const [showMiniCelebration, setShowMiniCelebration] = useState(false);
   const [showInsaneCelebration, setShowInsaneCelebration] = useState(false);
 
-  const activeRoutine = state?.routines.find(r => r.id === state.activeRoutineId) || state?.routines[0];
+  const activeRoutine = state?.routines.find((r) => r.id === state.activeRoutineId) || state?.routines[0];
 
   // Load states
   useEffect(() => {
@@ -66,183 +85,248 @@ const Index: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (showAddModal || showAddRoutineModal) return;
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      
+
       switch (e.key.toLowerCase()) {
-        case 'a': setShowAddModal(true); break;
-        case 'e': if (!state?.settings.noUndoMode) setIsErasing(prev => !prev); break;
-        case 'r': setShowAddRoutineModal(true); break;
+        case 'a':
+          setShowAddModal(true);
+          break;
+        case 'e':
+          if (!state?.settings.noUndoMode) setIsErasing((prev) => !prev);
+          break;
+        case 'r':
+          setShowAddRoutineModal(true);
+          break;
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [showAddModal, showAddRoutineModal, state?.settings.noUndoMode]);
 
-  const handleCellUpdate = useCallback(async (habitId: string, dateKey: string, strokes: Stroke[], density: number, subHabitId?: string) => {
-    if (!state || !activeRoutine) return;
-    const newState = { ...state };
-    const routine = newState.routines.find(r => r.id === activeRoutine.id);
-    if (!routine) return;
-    const habit = routine.habits.find(h => h.id === habitId);
-    if (!habit) return;
+  const handleCellUpdate = useCallback(
+    async (habitId: string, dateKey: string, strokes: Stroke[], density: number, subHabitId?: string) => {
+      if (!state || !activeRoutine) return;
+      const newState = { ...state };
+      const routine = newState.routines.find((r) => r.id === activeRoutine.id);
+      if (!routine) return;
+      const habit = routine.habits.find((h) => h.id === habitId);
+      if (!habit) return;
 
-    const wasCompleted = subHabitId 
-      ? habit.subHabits?.find(sh => sh.id === subHabitId)?.cells[dateKey]?.completed
-      : habit.cells[dateKey]?.completed;
-    const isNowCompleted = strokes.length > 0;
+      const wasCompleted = subHabitId
+        ? habit.subHabits?.find((sh) => sh.id === subHabitId)?.cells[dateKey]?.completed
+        : habit.cells[dateKey]?.completed;
+      const isNowCompleted = strokes.length > 0;
 
-    if (subHabitId) {
-      const subHabit = habit.subHabits?.find(sh => sh.id === subHabitId);
-      if (subHabit) {
-        subHabit.cells[dateKey] = { strokes, completed: isNowCompleted, strokeDensity: density, completedAt: isNowCompleted ? Date.now() : undefined, timeOfDay: subHabit.timeOfDay };
+      if (subHabitId) {
+        const subHabit = habit.subHabits?.find((sh) => sh.id === subHabitId);
+        if (subHabit) {
+          subHabit.cells[dateKey] = {
+            strokes,
+            completed: isNowCompleted,
+            strokeDensity: density,
+            completedAt: isNowCompleted ? Date.now() : undefined,
+            timeOfDay: subHabit.timeOfDay,
+          };
+        }
+      } else {
+        habit.cells[dateKey] = {
+          strokes,
+          completed: isNowCompleted,
+          strokeDensity: density,
+          completedAt: isNowCompleted ? Date.now() : undefined,
+          timeOfDay: habit.timeOfDay,
+        };
       }
-    } else {
-      habit.cells[dateKey] = { strokes, completed: isNowCompleted, strokeDensity: density, completedAt: isNowCompleted ? Date.now() : undefined, timeOfDay: habit.timeOfDay };
-    }
-    
-    await saveState(newState);
-    setState(newState);
-    if (!wasCompleted && isNowCompleted) setShowMiniCelebration(true);
-  }, [state, activeRoutine]);
 
-  const handleAddHabit = useCallback(async (name: string, timeOfDay: TimeOfDay, parentHabitId?: string, intent?: string) => {
-    if (!state || !activeRoutine) return;
-    const newState = await addHabit(state, activeRoutine.id, { name, timeOfDay, intent }, parentHabitId);
-    setState(newState);
-    toast.success(parentHabitId ? `Added sub-habit: ${name}` : `Added habit: ${name}`);
-  }, [state, activeRoutine]);
+      await saveState(newState);
+      setState(newState);
+      if (!wasCompleted && isNowCompleted) setShowMiniCelebration(true);
+    },
+    [state, activeRoutine]
+  );
 
-  const handleDeleteHabit = useCallback(async (habitId: string) => {
-    if (!state || !activeRoutine) return;
-    const newState = await deleteHabit(state, activeRoutine.id, habitId);
-    setState(newState);
-  }, [state, activeRoutine]);
+  const handleAddHabit = useCallback(
+    async (name: string, timeOfDay: TimeOfDay, parentHabitId?: string, intent?: string) => {
+      if (!state || !activeRoutine) return;
+      const newState = await addHabit(state, activeRoutine.id, { name, timeOfDay, intent }, parentHabitId);
+      setState(newState);
+      toast.success(parentHabitId ? `Added sub-habit: ${name}` : `Added habit: ${name}`);
+    },
+    [state, activeRoutine]
+  );
 
-  const handleDeleteSubHabit = useCallback(async (habitId: string, subHabitId: string) => {
-    if (!state || !activeRoutine) return;
-    const newState = await deleteHabit(state, activeRoutine.id, habitId, subHabitId);
-    setState(newState);
-  }, [state, activeRoutine]);
+  const handleDeleteHabit = useCallback(
+    async (habitId: string) => {
+      if (!state || !activeRoutine) return;
+      const newState = await deleteHabit(state, activeRoutine.id, habitId);
+      setState(newState);
+    },
+    [state, activeRoutine]
+  );
 
-  const handleToggleExpanded = useCallback(async (habitId: string) => {
-    if (!state || !activeRoutine) return;
-    const newState = await toggleHabitExpanded(state, activeRoutine.id, habitId);
-    setState(newState);
-  }, [state, activeRoutine]);
+  const handleDeleteSubHabit = useCallback(
+    async (habitId: string, subHabitId: string) => {
+      if (!state || !activeRoutine) return;
+      const newState = await deleteHabit(state, activeRoutine.id, habitId, subHabitId);
+      setState(newState);
+    },
+    [state, activeRoutine]
+  );
 
-  const handleAddRoutine = useCallback(async (name: string, duration: number, startDate: string, routineType: RoutineType = 'permanent') => {
-    if (!state) return;
-    const newState = await addRoutine(state, { name, duration, startDate, position: { x: 100, y: 100 }, routineType, reflections: [] });
-    setState(newState);
-    toast.success(`Created routine: ${name}`);
-  }, [state]);
+  const handleToggleExpanded = useCallback(
+    async (habitId: string) => {
+      if (!state || !activeRoutine) return;
+      const newState = await toggleHabitExpanded(state, activeRoutine.id, habitId);
+      setState(newState);
+    },
+    [state, activeRoutine]
+  );
 
-  const handleSwitchRoutine = useCallback(async (routineId: string) => {
-    if (!state) return;
-    const newState = await setActiveRoutine(state, routineId);
-    setState(newState);
-  }, [state]);
+  const handleAddRoutine = useCallback(
+    async (
+      name: string,
+      duration: number,
+      startDate: string,
+      routineType: RoutineType = 'permanent'
+    ) => {
+      if (!state) return;
+      const newState = await addRoutine(state, {
+        name,
+        duration,
+        startDate,
+        position: { x: 100, y: 100 },
+        routineType,
+        reflections: [],
+      });
+      setState(newState);
+      toast.success(`Created routine: ${name}`);
+    },
+    [state]
+  );
 
-  const handleZoneChange = useCallback((zone: ZoneType) => {
-    const newWorld = { ...worldState, currentZone: zone };
-    if (!newWorld.visitedZones.includes(zone)) {
-      newWorld.visitedZones = [...newWorld.visitedZones, zone];
-    }
-    setWorldState(newWorld);
-    saveWorldState(newWorld);
-  }, [worldState]);
+  const handleSwitchRoutine = useCallback(
+    async (routineId: string) => {
+      if (!state) return;
+      const newState = await setActiveRoutine(state, routineId);
+      setState(newState);
+    },
+    [state]
+  );
+
+  const handleZoneChange = useCallback(
+    (zone: ZoneType) => {
+      const newWorld = { ...worldState, currentZone: zone };
+      if (!newWorld.visitedZones.includes(zone)) {
+        newWorld.visitedZones = [...newWorld.visitedZones, zone];
+      }
+      setWorldState(newWorld);
+      saveWorldState(newWorld);
+    },
+    [worldState]
+  );
 
   const handleNavigate = useCallback((zone: ZoneType) => {
     (window as any).__navigateToZone?.(zone);
   }, []);
 
-  const handleUpdateUnlocks = useCallback((updates: Partial<MilestoneUnlocks>) => {
-    const newWorld = updateMilestoneUnlocks(worldState, updates);
-    setWorldState(newWorld);
-  }, [worldState]);
+  const handleUpdateUnlocks = useCallback(
+    (updates: Partial<MilestoneUnlocks>) => {
+      const newWorld = updateMilestoneUnlocks(worldState, updates);
+      setWorldState(newWorld);
+    },
+    [worldState]
+  );
 
-  const handleAddTimeCapsule = useCallback((message: string) => {
-    const newWorld = addTimeCapsule(worldState, message);
-    setWorldState(newWorld);
-    toast.success('Time capsule sealed!');
-  }, [worldState]);
+  const handleAddTimeCapsule = useCallback(
+    (message: string) => {
+      const newWorld = addTimeCapsule(worldState, message);
+      setWorldState(newWorld);
+      toast.success('Time capsule sealed!');
+    },
+    [worldState]
+  );
 
-  const renderZone = useCallback((zone: ZoneType) => {
-    const hasReached = worldState.insaneProgress.currentDay >= 50;
-    
-    switch (zone) {
-      case 'review':
-        return <ReviewIsland routine={activeRoutine} allRoutines={state?.routines || []} />;
-      case 'insane':
-        return (
-          <InsaneState 
-            progress={worldState.insaneProgress} 
-            onExplore={() => {
-              const newWorld = updateInsaneProgress(worldState, { isExploring: true });
-              setWorldState(newWorld);
-            }}
-          />
-        );
-      case 'focus':
-        return <FocusZone onBack={() => handleNavigate('insane')} />;
-      case 'journal':
-        return (
-          <JournalWorld 
-            journalState={worldState.journalState}
-            onUpdateJournal={(updates) => {
-              const newWorld = updateJournalState(worldState, updates);
-              setWorldState(newWorld);
-            }}
-          />
-        );
-      case 'recovery':
-        return (
-          <RecoveryZone 
-            habits={activeRoutine?.habits || []}
-            onRestart={() => {}}
-            onContinue={() => {}}
-          />
-        );
-      case 'milestones':
-        return (
-          <MilestonesZone
-            currentDay={worldState.insaneProgress.currentDay}
-            unlocks={worldState.insaneProgress.unlocks}
-            onUpdateUnlocks={handleUpdateUnlocks}
-            onBack={() => handleNavigate('center')}
-          />
-        );
-      case 'time-capsules':
-        return (
-          <TimeCapsuleZone
-            capsules={worldState.insaneProgress.timeCapsules}
-            currentDay={worldState.insaneProgress.currentDay}
-            hasReached={hasReached}
-            onAddCapsule={handleAddTimeCapsule}
-            onBack={() => handleNavigate('center')}
-          />
-        );
-      case 'flame-shrine':
-        return (
-          <FlameShrineZone
-            flameStrength={worldState.insaneProgress.flameStrength}
-            consecutiveStreak={worldState.insaneProgress.consecutiveStreak}
-            hasReached={hasReached}
-            onBack={() => handleNavigate('center')}
-          />
-        );
-      case 'zen-garden':
-        return hasReached ? (
-          <ZenGardenZone onBack={() => handleNavigate('insane')} />
-        ) : null;
-      default:
-        return null;
-    }
-  }, [activeRoutine, state?.routines, worldState, handleNavigate, handleUpdateUnlocks, handleAddTimeCapsule]);
+  const handleZoomCommit = useCallback(
+    (zoom: number) => {
+      if (!state) return;
+      updateSettings(state, { zoom }).then(setState);
+    },
+    [state]
+  );
+
+  const renderZone = useCallback(
+    (zone: ZoneType) => {
+      const hasReached = worldState.insaneProgress.currentDay >= 50;
+
+      switch (zone) {
+        case 'review':
+          return <ReviewIsland routine={activeRoutine} allRoutines={state?.routines || []} />;
+        case 'insane':
+          return (
+            <InsaneState
+              progress={worldState.insaneProgress}
+              onExplore={() => {
+                const newWorld = updateInsaneProgress(worldState, { isExploring: true });
+                setWorldState(newWorld);
+              }}
+            />
+          );
+        case 'focus':
+          return <FocusZone onBack={() => handleNavigate('insane')} />;
+        case 'journal':
+          return (
+            <JournalWorld
+              journalState={worldState.journalState}
+              onUpdateJournal={(updates) => {
+                const newWorld = updateJournalState(worldState, updates);
+                setWorldState(newWorld);
+              }}
+            />
+          );
+        case 'recovery':
+          return (
+            <RecoveryZone habits={activeRoutine?.habits || []} onRestart={() => {}} onContinue={() => {}} />
+          );
+        case 'milestones':
+          return (
+            <MilestonesZone
+              currentDay={worldState.insaneProgress.currentDay}
+              unlocks={worldState.insaneProgress.unlocks}
+              onUpdateUnlocks={handleUpdateUnlocks}
+              onBack={() => handleNavigate('center')}
+            />
+          );
+        case 'time-capsules':
+          return (
+            <TimeCapsuleZone
+              capsules={worldState.insaneProgress.timeCapsules}
+              currentDay={worldState.insaneProgress.currentDay}
+              hasReached={hasReached}
+              onAddCapsule={handleAddTimeCapsule}
+              onBack={() => handleNavigate('center')}
+            />
+          );
+        case 'flame-shrine':
+          return (
+            <FlameShrineZone
+              flameStrength={worldState.insaneProgress.flameStrength}
+              consecutiveStreak={worldState.insaneProgress.consecutiveStreak}
+              hasReached={hasReached}
+              onBack={() => handleNavigate('center')}
+            />
+          );
+        case 'zen-garden':
+          return hasReached ? <ZenGardenZone onBack={() => handleNavigate('insane')} /> : null;
+        default:
+          return null;
+      }
+    },
+    [activeRoutine, state?.routines, worldState, handleNavigate, handleUpdateUnlocks, handleAddTimeCapsule]
+  );
 
   if (isLoading || !state) {
     return (
       <div className="min-h-screen bg-canvas flex items-center justify-center">
-      <div className="text-center">
+        <div className="text-center">
           <h1 className="text-2xl font-semibold text-foreground mb-2">CONTINUUM</h1>
           <p className="text-muted-foreground">Loading your world...</p>
         </div>
@@ -250,23 +334,29 @@ const Index: React.FC = () => {
     );
   }
 
-  const isRoutineFaded = activeRoutine && activeRoutine.routineType !== 'permanent' && (() => {
-    const endDate = new Date(activeRoutine.startDate);
-    endDate.setDate(endDate.getDate() + activeRoutine.duration);
-    return new Date() > endDate;
-  })();
+  const isRoutineFaded =
+    activeRoutine &&
+    activeRoutine.routineType !== 'permanent' &&
+    (() => {
+      const endDate = new Date(activeRoutine.startDate);
+      endDate.setDate(endDate.getDate() + activeRoutine.duration);
+      return new Date() > endDate;
+    })();
 
   const hasReachedInsane = worldState.insaneProgress.currentDay >= 50;
 
   return (
-    <div className={`min-h-screen overflow-hidden transition-all duration-1000 ${hasReachedInsane ? 'bg-gradient-to-br from-canvas via-canvas to-primary/5' : 'bg-canvas'}`}>
+    <div
+      className={`min-h-screen overflow-hidden transition-all duration-1000 ${hasReachedInsane ? 'bg-gradient-to-br from-canvas via-canvas to-primary/5' : 'bg-canvas'}`}
+    >
+      <h1 className="sr-only">CONTINUUM spatial habit tracker</h1>
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-40 p-2 sm:p-4 pointer-events-none">
         <div className="flex items-center justify-between pointer-events-auto gap-2">
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-            <img 
-              src={continuumHeader} 
-              alt="CONTINUUM - Spatial Habit Tracker" 
+            <img
+              src={continuumHeader}
+              alt="CONTINUUM - Spatial Habit Tracker"
               className={`h-6 sm:h-10 w-auto object-contain transition-all ${hasReachedInsane ? 'drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]' : ''}`}
             />
             {hasReachedInsane && (
@@ -276,50 +366,92 @@ const Index: React.FC = () => {
             )}
           </div>
           <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto flex-shrink min-w-0">
-            {state.routines.map(routine => (
-              <button key={routine.id} onClick={() => handleSwitchRoutine(routine.id)}
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs rounded-lg transition-all whitespace-nowrap flex-shrink-0 ${routine.id === activeRoutine?.id 
-                  ? hasReachedInsane 
-                    ? 'bg-primary/30 text-primary border border-primary/40 shadow-lg shadow-primary/20' 
-                    : 'bg-primary/20 text-primary border border-primary/30' 
-                  : 'bg-secondary text-muted-foreground hover:text-foreground border border-transparent'}`}>
+            {state.routines.map((routine) => (
+              <button
+                key={routine.id}
+                onClick={() => handleSwitchRoutine(routine.id)}
+                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs rounded-lg transition-all whitespace-nowrap flex-shrink-0 ${
+                  routine.id === activeRoutine?.id
+                    ? hasReachedInsane
+                      ? 'bg-primary/30 text-primary border border-primary/40 shadow-lg shadow-primary/20'
+                      : 'bg-primary/20 text-primary border border-primary/30'
+                    : 'bg-secondary text-muted-foreground hover:text-foreground border border-transparent'
+                }`}
+              >
                 {routine.name}
               </button>
             ))}
-            <button onClick={() => setShowAddRoutineModal(true)} className="px-2 py-1 sm:py-1.5 text-[10px] sm:text-xs rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex-shrink-0">+</button>
+            <button
+              onClick={() => setShowAddRoutineModal(true)}
+              className="px-2 py-1 sm:py-1.5 text-[10px] sm:text-xs rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex-shrink-0"
+            >
+              +
+            </button>
           </div>
         </div>
       </header>
 
       {/* Spatial Canvas World */}
-      <SpatialCanvas settings={state.settings} worldState={worldState} onZoneChange={handleZoneChange} renderZone={renderZone}>
-        <div id="habit-grid-container" className={`p-4 sm:p-8 ${isRoutineFaded ? 'opacity-60' : ''}`} style={{ minWidth: 'min(800px, 100vw)' }}>
+      <SpatialCanvas
+        settings={state.settings}
+        worldState={worldState}
+        onZoneChange={handleZoneChange}
+        onZoomCommit={handleZoomCommit}
+        renderZone={renderZone}
+      >
+        <div
+          id="habit-grid-container"
+          className={`p-4 sm:p-8 ${isRoutineFaded ? 'opacity-60' : ''}`}
+          style={{ minWidth: 'min(800px, 100vw)' }}
+        >
           {activeRoutine && (
-            <HabitGridComponent routine={activeRoutine} settings={state.settings} isErasing={isErasing} onCellUpdate={handleCellUpdate} onDeleteHabit={handleDeleteHabit} onDeleteSubHabit={handleDeleteSubHabit} onToggleExpanded={handleToggleExpanded} />
+            <HabitGridComponent
+              routine={activeRoutine}
+              settings={state.settings}
+              isErasing={isErasing}
+              onCellUpdate={handleCellUpdate}
+              onDeleteHabit={handleDeleteHabit}
+              onDeleteSubHabit={handleDeleteSubHabit}
+              onToggleExpanded={handleToggleExpanded}
+            />
           )}
         </div>
       </SpatialCanvas>
 
-
       {/* World Navigator */}
-      <WorldNavigator 
-        currentZone={worldState.currentZone} 
+      <WorldNavigator
+        currentZone={worldState.currentZone}
         onNavigate={handleNavigate}
         canAccessFocus={worldState.visitedZones.includes('review')}
         insaneReached={worldState.insaneProgress.currentDay >= 50}
       />
 
       {/* Toolbar */}
-      <Toolbar settings={state.settings} isErasing={isErasing} onToggleErase={() => setIsErasing(!isErasing)} 
+      <Toolbar
+        settings={state.settings}
+        isErasing={isErasing}
+        onToggleErase={() => setIsErasing(!isErasing)}
         onZoomIn={() => updateSettings(state, { zoom: Math.min(2, state.settings.zoom + 0.1) }).then(setState)}
         onZoomOut={() => updateSettings(state, { zoom: Math.max(0.25, state.settings.zoom - 0.1) }).then(setState)}
-        onAddHabit={() => setShowAddModal(true)} onToggleAnalytics={() => handleNavigate('review')}
-        onUpdateSettings={(s) => updateSettings(state, s).then(setState)} onExport={() => {}} />
+        onAddHabit={() => setShowAddModal(true)}
+        onToggleAnalytics={() => handleNavigate('review')}
+        onUpdateSettings={(s) => updateSettings(state, s).then(setState)}
+        onExport={() => {}}
+      />
 
       {/* Modals */}
-      <AddHabitModal isOpen={showAddModal} onClose={() => setShowAddModal(false)} onAdd={handleAddHabit} parentHabits={activeRoutine?.habits.map(h => ({ id: h.id, name: h.name })) || []} />
-      <AddRoutineModal isOpen={showAddRoutineModal} onClose={() => setShowAddRoutineModal(false)} onAdd={handleAddRoutine} />
-      
+      <AddHabitModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onAdd={handleAddHabit}
+        parentHabits={activeRoutine?.habits.map((h) => ({ id: h.id, name: h.name })) || []}
+      />
+      <AddRoutineModal
+        isOpen={showAddRoutineModal}
+        onClose={() => setShowAddRoutineModal(false)}
+        onAdd={handleAddRoutine}
+      />
+
       {/* Celebrations */}
       <ConfettiCelebration isActive={showCelebration} onComplete={() => setShowCelebration(false)} />
       <ConfettiCelebration isActive={showMiniCelebration} onComplete={() => setShowMiniCelebration(false)} mini />
@@ -335,3 +467,4 @@ const Index: React.FC = () => {
 };
 
 export default Index;
+
