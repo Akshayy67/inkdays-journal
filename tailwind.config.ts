@@ -7,14 +7,47 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: {
+        DEFAULT: "1rem",
+        sm: "1.5rem",
+        lg: "2rem",
+      },
       screens: {
+        sm: "640px",
+        md: "768px",
+        lg: "1024px",
+        xl: "1280px",
         "2xl": "1400px",
       },
+    },
+    // Mobile-first breakpoints
+    screens: {
+      xs: "480px",
+      sm: "640px",
+      md: "768px",
+      lg: "1024px",
+      xl: "1280px",
+      "2xl": "1440px",
     },
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      // Responsive font sizes using clamp
+      fontSize: {
+        'fluid-xs': 'clamp(0.75rem, 1.5vw, 0.875rem)',
+        'fluid-sm': 'clamp(0.875rem, 2vw, 1rem)',
+        'fluid-base': 'clamp(1rem, 2.5vw, 1.125rem)',
+        'fluid-lg': 'clamp(1.125rem, 3vw, 1.25rem)',
+        'fluid-xl': 'clamp(1.25rem, 3.5vw, 1.5rem)',
+        'fluid-2xl': 'clamp(1.5rem, 4vw, 2rem)',
+        'fluid-3xl': 'clamp(1.875rem, 5vw, 2.5rem)',
+      },
+      // Responsive spacing
+      spacing: {
+        'safe': 'max(1rem, env(safe-area-inset-left))',
+        'safe-top': 'max(0.5rem, env(safe-area-inset-top))',
+        'safe-bottom': 'max(0.5rem, env(safe-area-inset-bottom))',
       },
       colors: {
         border: "hsl(var(--border))",
@@ -80,6 +113,13 @@ export default {
       boxShadow: {
         soft: "var(--shadow-soft)",
         glow: "var(--shadow-glow)",
+      },
+      // Minimum touch target size
+      minWidth: {
+        touch: "44px",
+      },
+      minHeight: {
+        touch: "44px",
       },
       keyframes: {
         "accordion-down": {

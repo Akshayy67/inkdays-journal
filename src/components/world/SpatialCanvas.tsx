@@ -32,6 +32,16 @@ const getTouchMidpoint = (touches: TouchList) => {
   };
 };
 
+// Responsive zone widths based on viewport
+const getResponsiveZoneWidth = () => {
+  if (typeof window === 'undefined') return 800;
+  const vw = window.innerWidth;
+  if (vw < 480) return Math.min(vw - 32, 400);
+  if (vw < 768) return Math.min(vw - 48, 600);
+  if (vw < 1024) return Math.min(vw - 64, 700);
+  return 800;
+};
+
 const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
   children,
   settings,
@@ -46,12 +56,22 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [targetOffset, setTargetOffset] = useState({ x: 0, y: 0 });
+  const [zoneWidth, setZoneWidth] = useState(getResponsiveZoneWidth());
 
   // Local zoom for smooth pinch updates; commit when gesture ends.
   const [localZoom, setLocalZoom] = useState(settings.zoom);
 
   const offsetRef = useRef(offset);
   const zoomRef = useRef(localZoom);
+
+  // Update zone width on resize
+  useEffect(() => {
+    const handleResize = () => {
+      setZoneWidth(getResponsiveZoneWidth());
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     offsetRef.current = offset;
@@ -83,16 +103,19 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
       const containerWidth = containerRef.current?.clientWidth || window.innerWidth;
       const containerHeight = containerRef.current?.clientHeight || window.innerHeight;
 
+      // Responsive centering offset
+      const contentOffset = zoneWidth / 2;
+
       // Center the zone in the viewport
       const newOffset = {
-        x: -position.x + containerWidth / 2 - 400, // 400 = half of typical content width
-        y: -position.y + containerHeight / 2 - 300,
+        x: -position.x + containerWidth / 2 - contentOffset,
+        y: -position.y + containerHeight / 2 - 200, // Reduced vertical offset for mobile
       };
 
       setTargetOffset(newOffset);
       onZoneChange(zone);
     },
-    [onZoneChange]
+    [onZoneChange, zoneWidth]
   );
 
   // Smooth animation to target
@@ -325,7 +348,7 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
   return (
     <div
       ref={containerRef}
-      className="spatial-bg w-full h-screen overflow-hidden cursor-grab touch-none"
+      className="spatial-bg w-full h-screen h-[100dvh] overflow-hidden cursor-grab touch-none"
       style={{
         cursor: isPanning || isGesturing ? 'grabbing' : 'grab',
         background: 'hsl(var(--canvas-bg))',
@@ -372,7 +395,7 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
             top: ZONE_POSITIONS.review.y,
           }}
         >
-          <div className="w-[800px]">{renderZone('review')}</div>
+          <div className="zone-container" style={{ width: zoneWidth }}>{renderZone('review')}</div>
         </div>
 
         {/* Zone: The Insane State (Far Above) */}
@@ -383,7 +406,7 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
             top: ZONE_POSITIONS.insane.y,
           }}
         >
-          <div className="w-[800px]">{renderZone('insane')}</div>
+          <div className="zone-container" style={{ width: zoneWidth }}>{renderZone('insane')}</div>
         </div>
 
         {/* Zone: Focus Zone (Above Insane) */}
@@ -394,7 +417,7 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
             top: ZONE_POSITIONS.focus.y,
           }}
         >
-          <div className="w-[800px]">{renderZone('focus')}</div>
+          <div className="zone-container" style={{ width: zoneWidth }}>{renderZone('focus')}</div>
         </div>
 
         {/* Zone: Journal World (Left) */}
@@ -405,7 +428,7 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
             top: ZONE_POSITIONS.journal.y,
           }}
         >
-          <div className="w-[600px]">{renderZone('journal')}</div>
+          <div className="zone-container" style={{ width: Math.min(zoneWidth, 600) }}>{renderZone('journal')}</div>
         </div>
 
         {/* Zone: Recovery (Below) */}
@@ -416,7 +439,7 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
             top: ZONE_POSITIONS.recovery.y,
           }}
         >
-          <div className="w-[800px]">{renderZone('recovery')}</div>
+          <div className="zone-container" style={{ width: zoneWidth }}>{renderZone('recovery')}</div>
         </div>
 
         {/* Zone: Milestones (Right of Review) */}
@@ -427,7 +450,7 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
             top: ZONE_POSITIONS.milestones.y,
           }}
         >
-          <div className="w-[600px]">{renderZone('milestones')}</div>
+          <div className="zone-container" style={{ width: Math.min(zoneWidth, 600) }}>{renderZone('milestones')}</div>
         </div>
 
         {/* Zone: Time Capsules (Right of Center) */}
@@ -438,7 +461,7 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
             top: ZONE_POSITIONS['time-capsules'].y,
           }}
         >
-          <div className="w-[600px]">{renderZone('time-capsules')}</div>
+          <div className="zone-container" style={{ width: Math.min(zoneWidth, 600) }}>{renderZone('time-capsules')}</div>
         </div>
 
         {/* Zone: Flame Shrine (Right of Recovery) */}
@@ -449,7 +472,7 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
             top: ZONE_POSITIONS['flame-shrine'].y,
           }}
         >
-          <div className="w-[600px]">{renderZone('flame-shrine')}</div>
+          <div className="zone-container" style={{ width: Math.min(zoneWidth, 600) }}>{renderZone('flame-shrine')}</div>
         </div>
 
         {/* Zone: Zen Garden (Above Focus, only when reached) */}
@@ -460,7 +483,7 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
             top: ZONE_POSITIONS['zen-garden'].y,
           }}
         >
-          <div className="w-[800px]">{renderZone('zen-garden')}</div>
+          <div className="zone-container" style={{ width: zoneWidth }}>{renderZone('zen-garden')}</div>
         </div>
 
         {/* Visual connectors between zones */}
@@ -512,11 +535,10 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
             strokeDasharray="8 8"
           />
 
-          {/* Center to Journal */}
+          {/* Center to Journal (horizontal) */}
           <path
-            d={`M ${ZONE_POSITIONS.center.x + 5000} ${ZONE_POSITIONS.center.y + 5300}
-                Q ${ZONE_POSITIONS.journal.x + 5600} ${ZONE_POSITIONS.center.y + 5300}
-                ${ZONE_POSITIONS.journal.x + 5600} ${ZONE_POSITIONS.journal.y + 5300}`}
+            d={`M ${ZONE_POSITIONS.center.x} ${ZONE_POSITIONS.center.y + 5200}
+                L ${ZONE_POSITIONS.journal.x + 500} ${ZONE_POSITIONS.journal.y + 5200}`}
             fill="none"
             stroke="url(#pathGradient)"
             strokeWidth="2"
@@ -525,7 +547,7 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
 
           {/* Center to Recovery */}
           <path
-            d={`M ${ZONE_POSITIONS.center.x + 400} ${ZONE_POSITIONS.center.y + 5600}
+            d={`M ${ZONE_POSITIONS.center.x + 400} ${ZONE_POSITIONS.center.y + 5500}
                 L ${ZONE_POSITIONS.recovery.x + 400} ${ZONE_POSITIONS.recovery.y + 5000}`}
             fill="none"
             stroke="url(#pathGradient)"
@@ -539,4 +561,3 @@ const SpatialCanvas: React.FC<SpatialCanvasProps> = ({
 };
 
 export default SpatialCanvas;
-

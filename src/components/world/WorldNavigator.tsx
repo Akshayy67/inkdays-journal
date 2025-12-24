@@ -1,7 +1,7 @@
 import React from 'react';
 import { ZoneType, ZONE_POSITIONS } from '@/types/world';
-import { motion } from 'framer-motion';
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, BookOpen, Mountain, Compass, Heart, Sparkles, Flower2, Crown, Mail, Flame } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, BookOpen, Mountain, Compass, Heart, Sparkles, Flower2, Crown, Mail, Flame, Navigation } from 'lucide-react';
 
 interface WorldNavigatorProps {
   currentZone: ZoneType;
@@ -10,17 +10,17 @@ interface WorldNavigatorProps {
   insaneReached: boolean;
 }
 
-const zoneInfo: Record<ZoneType, { icon: React.ComponentType<any>; label: string }> = {
-  center: { icon: Compass, label: 'Present' },
-  review: { icon: Mountain, label: 'Review Island' },
-  insane: { icon: Sparkles, label: 'The Insane State' },
-  focus: { icon: Sparkles, label: 'Focus Zone' },
-  journal: { icon: BookOpen, label: 'Journal World' },
-  recovery: { icon: Heart, label: 'Recovery' },
-  'zen-garden': { icon: Flower2, label: 'Zen Garden' },
-  'milestones': { icon: Crown, label: 'Milestone Rewards' },
-  'time-capsules': { icon: Mail, label: 'Time Capsules' },
-  'flame-shrine': { icon: Flame, label: 'Flame Shrine' },
+const zoneInfo: Record<ZoneType, { icon: React.ComponentType<any>; label: string; shortLabel: string }> = {
+  center: { icon: Compass, label: 'Present', shortLabel: 'Present' },
+  review: { icon: Mountain, label: 'Review Island', shortLabel: 'Review' },
+  insane: { icon: Sparkles, label: 'The Insane State', shortLabel: 'Insane' },
+  focus: { icon: Sparkles, label: 'Focus Zone', shortLabel: 'Focus' },
+  journal: { icon: BookOpen, label: 'Journal World', shortLabel: 'Journal' },
+  recovery: { icon: Heart, label: 'Recovery', shortLabel: 'Recovery' },
+  'zen-garden': { icon: Flower2, label: 'Zen Garden', shortLabel: 'Zen' },
+  'milestones': { icon: Crown, label: 'Milestone Rewards', shortLabel: 'Milestones' },
+  'time-capsules': { icon: Mail, label: 'Time Capsules', shortLabel: 'Capsules' },
+  'flame-shrine': { icon: Flame, label: 'Flame Shrine', shortLabel: 'Shrine' },
 };
 
 const WorldNavigator: React.FC<WorldNavigatorProps> = ({
@@ -30,6 +30,7 @@ const WorldNavigator: React.FC<WorldNavigatorProps> = ({
   insaneReached,
 }) => {
   const [showOthers, setShowOthers] = React.useState(false);
+  const [isExpanded, setIsExpanded] = React.useState(false);
   
   const getAvailableDirections = () => {
     const directions: { zone: ZoneType; direction: 'up' | 'down' | 'left' | 'right' }[] = [];
@@ -103,83 +104,176 @@ const WorldNavigator: React.FC<WorldNavigatorProps> = ({
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="fixed bottom-6 left-6 z-50"
+      className="fixed bottom-16 xs:bottom-20 sm:bottom-6 left-2 xs:left-4 sm:left-6 z-50 safe-left safe-bottom"
     >
-      {/* Current zone indicator */}
-      <div className="floating-panel p-3 mb-3">
-        <div className="flex items-center gap-2 text-sm text-foreground">
-          <CurrentIcon className="w-4 h-4 text-primary" />
-          <span className="font-medium">{zoneInfo[currentZone].label}</span>
-        </div>
-      </div>
-
-      {/* Navigation hints */}
-      <div className="space-y-2">
-        {directions.map(({ zone, direction }) => {
-          const ZoneIcon = zoneInfo[zone].icon;
-          return (
-            <motion.button
-              key={zone}
-              onClick={() => onNavigate(zone)}
-              whileHover={{ scale: 1.02, x: direction === 'left' ? -4 : direction === 'right' ? 4 : 0, y: direction === 'up' ? -4 : direction === 'down' ? 4 : 0 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground transition-all text-sm group w-full"
-            >
-              <DirectionIcon direction={direction} />
-              <ZoneIcon className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100" />
-              <span className="opacity-70 group-hover:opacity-100">{zoneInfo[zone].label}</span>
-            </motion.button>
-          );
-        })}
-
-        {/* Others button */}
+      {/* Mobile: Compact floating button that expands */}
+      <div className="sm:hidden">
         <motion.button
-          onClick={() => setShowOthers(!showOthers)}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm w-full ${
-            showOthers 
-              ? 'bg-primary/20 text-primary border border-primary/30' 
-              : 'bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground'
-          }`}
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="floating-panel p-2.5 xs:p-3 flex items-center gap-2"
+          whileTap={{ scale: 0.95 }}
         >
-          <Sparkles className="w-4 h-4" />
-          <span>Others</span>
+          <CurrentIcon className="w-4 h-4 xs:w-5 xs:h-5 text-primary" />
+          <span className="text-xs xs:text-sm font-medium text-foreground">
+            {zoneInfo[currentZone].shortLabel}
+          </span>
+          <Navigation className={`w-3 h-3 xs:w-4 xs:h-4 text-muted-foreground transition-transform ${isExpanded ? 'rotate-45' : ''}`} />
         </motion.button>
 
-        {/* Others dropdown */}
-        {showOthers && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="pl-4 space-y-1 border-l-2 border-primary/30 ml-2"
-          >
-            {otherZones.map((zone) => {
-              const ZoneIcon = zoneInfo[zone].icon;
-              const isActive = currentZone === zone;
-              return (
-                <motion.button
-                  key={zone}
-                  onClick={() => {
-                    onNavigate(zone);
-                    setShowOthers(false);
-                  }}
-                  whileHover={{ scale: 1.02, x: 4 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-sm w-full ${
-                    isActive
-                      ? 'bg-primary/20 text-primary'
+        {/* Mobile expanded navigation */}
+        <AnimatePresence>
+          {isExpanded && (
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              className="absolute bottom-12 xs:bottom-14 left-0 floating-panel p-2 min-w-[160px] xs:min-w-[180px]"
+            >
+              <div className="space-y-1">
+                {directions.map(({ zone, direction }) => {
+                  const ZoneIcon = zoneInfo[zone].icon;
+                  return (
+                    <button
+                      key={zone}
+                      onClick={() => {
+                        onNavigate(zone);
+                        setIsExpanded(false);
+                      }}
+                      className="nav-button w-full bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground text-xs xs:text-sm"
+                    >
+                      <DirectionIcon direction={direction} />
+                      <ZoneIcon className="w-3.5 h-3.5" />
+                      <span>{zoneInfo[zone].shortLabel}</span>
+                    </button>
+                  );
+                })}
+
+                <div className="border-t border-border my-1" />
+
+                <button
+                  onClick={() => setShowOthers(!showOthers)}
+                  className={`nav-button w-full text-xs xs:text-sm ${
+                    showOthers 
+                      ? 'bg-primary/20 text-primary' 
                       : 'bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <ZoneIcon className="w-3.5 h-3.5" />
-                  <span>{zoneInfo[zone].label}</span>
-                </motion.button>
-              );
-            })}
-          </motion.div>
-        )}
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>More zones</span>
+                </button>
+
+                {showOthers && (
+                  <div className="pl-2 space-y-1 border-l-2 border-primary/30 ml-2">
+                    {otherZones.map((zone) => {
+                      const ZoneIcon = zoneInfo[zone].icon;
+                      const isActive = currentZone === zone;
+                      return (
+                        <button
+                          key={zone}
+                          onClick={() => {
+                            onNavigate(zone);
+                            setShowOthers(false);
+                            setIsExpanded(false);
+                          }}
+                          className={`nav-button w-full text-xs ${
+                            isActive
+                              ? 'bg-primary/20 text-primary'
+                              : 'bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          <ZoneIcon className="w-3 h-3" />
+                          <span>{zoneInfo[zone].shortLabel}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Desktop: Full navigation panel */}
+      <div className="hidden sm:block">
+        {/* Current zone indicator */}
+        <div className="floating-panel p-2.5 sm:p-3 mb-2 sm:mb-3">
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-foreground">
+            <CurrentIcon className="w-4 h-4 text-primary" />
+            <span className="font-medium">{zoneInfo[currentZone].label}</span>
+          </div>
+        </div>
+
+        {/* Navigation hints */}
+        <div className="space-y-1.5 sm:space-y-2">
+          {directions.map(({ zone, direction }) => {
+            const ZoneIcon = zoneInfo[zone].icon;
+            return (
+              <motion.button
+                key={zone}
+                onClick={() => onNavigate(zone)}
+                whileHover={{ scale: 1.02, x: direction === 'left' ? -4 : direction === 'right' ? 4 : 0, y: direction === 'up' ? -4 : direction === 'down' ? 4 : 0 }}
+                whileTap={{ scale: 0.98 }}
+                className="nav-button bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground w-full text-xs sm:text-sm group"
+              >
+                <DirectionIcon direction={direction} />
+                <ZoneIcon className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100" />
+                <span className="opacity-70 group-hover:opacity-100">{zoneInfo[zone].label}</span>
+              </motion.button>
+            );
+          })}
+
+          {/* Others button */}
+          <motion.button
+            onClick={() => setShowOthers(!showOthers)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className={`nav-button w-full text-xs sm:text-sm ${
+              showOthers 
+                ? 'bg-primary/20 text-primary border border-primary/30' 
+                : 'bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Others</span>
+          </motion.button>
+
+          {/* Others dropdown */}
+          <AnimatePresence>
+            {showOthers && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="pl-3 sm:pl-4 space-y-1 border-l-2 border-primary/30 ml-2"
+              >
+                {otherZones.map((zone) => {
+                  const ZoneIcon = zoneInfo[zone].icon;
+                  const isActive = currentZone === zone;
+                  return (
+                    <motion.button
+                      key={zone}
+                      onClick={() => {
+                        onNavigate(zone);
+                        setShowOthers(false);
+                      }}
+                      whileHover={{ scale: 1.02, x: 4 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`nav-button w-full text-xs sm:text-sm ${
+                        isActive
+                          ? 'bg-primary/20 text-primary'
+                          : 'bg-secondary/60 hover:bg-secondary text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      <ZoneIcon className="w-3.5 h-3.5" />
+                      <span>{zoneInfo[zone].label}</span>
+                    </motion.button>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </motion.div>
   );

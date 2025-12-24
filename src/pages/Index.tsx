@@ -325,10 +325,10 @@ const Index: React.FC = () => {
 
   if (isLoading || !state) {
     return (
-      <div className="min-h-screen bg-canvas flex items-center justify-center">
+      <div className="min-h-screen min-h-[100dvh] bg-canvas flex items-center justify-center p-4">
         <div className="text-center">
-          <h1 className="text-2xl font-semibold text-foreground mb-2">CONTINUUM</h1>
-          <p className="text-muted-foreground">Loading your world...</p>
+          <h1 className="text-xl sm:text-2xl font-semibold text-foreground mb-2">CONTINUUM</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Loading your world...</p>
         </div>
       </div>
     );
@@ -347,30 +347,34 @@ const Index: React.FC = () => {
 
   return (
     <div
-      className={`min-h-screen overflow-hidden transition-all duration-1000 ${hasReachedInsane ? 'bg-gradient-to-br from-canvas via-canvas to-primary/5' : 'bg-canvas'}`}
+      className={`min-h-screen min-h-[100dvh] overflow-hidden transition-all duration-1000 ${hasReachedInsane ? 'bg-gradient-to-br from-canvas via-canvas to-primary/5' : 'bg-canvas'}`}
     >
       <h1 className="sr-only">CONTINUUM spatial habit tracker</h1>
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 p-2 sm:p-4 pointer-events-none">
-        <div className="flex items-center justify-between pointer-events-auto gap-2">
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+      
+      {/* Header - Mobile optimized with safe area */}
+      <header className="fixed top-0 left-0 right-0 z-40 safe-top px-2 xs:px-3 sm:px-4 py-2 pointer-events-none">
+        <div className="flex items-center justify-between pointer-events-auto gap-2 max-w-full">
+          {/* Logo - responsive sizing */}
+          <div className="flex items-center gap-1.5 xs:gap-2 sm:gap-3 flex-shrink-0">
             <img
               src={continuumHeader}
               alt="CONTINUUM - Spatial Habit Tracker"
-              className={`h-6 sm:h-10 w-auto object-contain transition-all ${hasReachedInsane ? 'drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]' : ''}`}
+              className={`h-5 xs:h-6 sm:h-8 md:h-10 w-auto object-contain transition-all ${hasReachedInsane ? 'drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]' : ''}`}
             />
             {hasReachedInsane && (
-              <span className="text-[10px] sm:text-xs font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 animate-pulse">
+              <span className="hidden xs:inline-flex text-[9px] xs:text-[10px] sm:text-xs font-semibold px-1.5 xs:px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 text-primary border border-primary/30 animate-pulse">
                 ⚡ INSANE
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto flex-shrink min-w-0">
+          
+          {/* Routine tabs - scrollable on mobile */}
+          <div className="flex items-center gap-1 overflow-x-auto flex-shrink min-w-0 scrollbar-hide">
             {state.routines.map((routine) => (
               <button
                 key={routine.id}
                 onClick={() => handleSwitchRoutine(routine.id)}
-                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs rounded-lg transition-all whitespace-nowrap flex-shrink-0 ${
+                className={`min-h-touch px-2 xs:px-2.5 sm:px-3 py-1.5 xs:py-2 text-[10px] xs:text-xs sm:text-sm rounded-lg transition-all whitespace-nowrap flex-shrink-0 ${
                   routine.id === activeRoutine?.id
                     ? hasReachedInsane
                       ? 'bg-primary/30 text-primary border border-primary/40 shadow-lg shadow-primary/20'
@@ -383,7 +387,8 @@ const Index: React.FC = () => {
             ))}
             <button
               onClick={() => setShowAddRoutineModal(true)}
-              className="px-2 py-1 sm:py-1.5 text-[10px] sm:text-xs rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex-shrink-0"
+              className="min-h-touch min-w-touch px-2 py-1.5 xs:py-2 text-[10px] xs:text-xs sm:text-sm rounded-lg bg-secondary text-muted-foreground hover:text-foreground flex-shrink-0 flex items-center justify-center"
+              aria-label="Add routine"
             >
               +
             </button>
@@ -401,8 +406,7 @@ const Index: React.FC = () => {
       >
         <div
           id="habit-grid-container"
-          className={`p-4 sm:p-8 ${isRoutineFaded ? 'opacity-60' : ''}`}
-          style={{ minWidth: 'min(800px, 100vw)' }}
+          className={`p-2 xs:p-3 sm:p-4 md:p-6 lg:p-8 ${isRoutineFaded ? 'opacity-60' : ''}`}
         >
           {activeRoutine && (
             <HabitGridComponent
@@ -457,8 +461,8 @@ const Index: React.FC = () => {
       <ConfettiCelebration isActive={showMiniCelebration} onComplete={() => setShowMiniCelebration(false)} mini />
       <ConfettiCelebration isActive={showInsaneCelebration} onComplete={() => setShowInsaneCelebration(false)} />
 
-      {/* Navigation hints - hidden on mobile */}
-      <div className="fixed bottom-6 right-6 z-40 text-xs text-muted-foreground/50 text-right hidden sm:block">
+      {/* Navigation hints - hidden on mobile and tablet */}
+      <div className="fixed bottom-6 right-6 z-40 text-xs text-muted-foreground/50 text-right hidden lg:block">
         <p>Arrow keys to navigate world</p>
         <p>Drag to pan freely</p>
       </div>
@@ -467,4 +471,3 @@ const Index: React.FC = () => {
 };
 
 export default Index;
-
