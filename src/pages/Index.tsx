@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AppState, TimeOfDay, Stroke, RecoveryState, RoutineType } from '@/types/habit';
 import { ZoneType, WorldState, defaultWorldState, MilestoneUnlocks } from '@/types/world';
 import {
@@ -23,6 +24,7 @@ import {
   calculateConsistencyDays,
 } from '@/lib/worldStorage';
 import { getDateKey, getDatesInRange } from '@/lib/habitUtils';
+import { useAuth } from '@/hooks/useAuth';
 import SpatialCanvas from '@/components/world/SpatialCanvas';
 import WorldNavigator from '@/components/world/WorldNavigator';
 import continuumHeader from '@/assets/continuum-header.png';
@@ -40,9 +42,14 @@ import Toolbar from '@/components/Toolbar';
 import AddHabitModal from '@/components/AddHabitModal';
 import AddRoutineModal from '@/components/AddRoutineModal';
 import ConfettiCelebration from '@/components/ConfettiCelebration';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { LogOut, Loader2 } from 'lucide-react';
 
 const Index: React.FC = () => {
+  const { user, loading: authLoading, signOut } = useAuth();
+  const navigate = useNavigate();
+  
   const [state, setState] = useState<AppState | null>(null);
   const [worldState, setWorldState] = useState<WorldState>(defaultWorldState);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,14 +62,27 @@ const Index: React.FC = () => {
 
   const activeRoutine = state?.routines.find((r) => r.id === state.activeRoutineId) || state?.routines[0];
 
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
   // Load states
   useEffect(() => {
+    if (!user) return;
     Promise.all([loadState(), Promise.resolve(loadWorldState())]).then(([appState, world]) => {
       setState(appState);
       setWorldState(world);
       setIsLoading(false);
     });
-  }, []);
+  }, [user]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success('Signed out successfully');
+  };
 
   // Track progress based on actual habit completion
   useEffect(() => {
@@ -323,6 +343,17 @@ const Index: React.FC = () => {
     [activeRoutine, state?.routines, worldState, handleNavigate, handleUpdateUnlocks, handleAddTimeCapsule]
   );
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen min-h-[100dvh] bg-canvas flex items-center justify-center p-4">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
+          <p className="text-sm sm:text-base text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading || !state) {
     return (
       <div className="min-h-screen min-h-[100dvh] bg-canvas flex items-center justify-center p-4">
@@ -392,6 +423,18 @@ const Index: React.FC = () => {
             >
               +
             </button>
+            
+            {/* Sign out button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="min-h-touch ml-1 xs:ml-2 flex-shrink-0"
+              aria-label="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">Sign out</span>
+            </Button>
           </div>
         </div>
       </header>
