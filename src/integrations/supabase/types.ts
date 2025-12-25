@@ -14,7 +14,262 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      habit_cells: {
+        Row: {
+          created_at: string
+          date: string
+          habit_id: string
+          id: string
+          updated_at: string
+          user_id: string
+          value: number | null
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          habit_id: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          value?: number | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          habit_id?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_cells_habit_id_fkey"
+            columns: ["habit_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      habits: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          is_expanded: boolean | null
+          name: string
+          parent_id: string | null
+          routine_id: string
+          sort_order: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_expanded?: boolean | null
+          name: string
+          parent_id?: string | null
+          routine_id: string
+          sort_order?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_expanded?: boolean | null
+          name?: string
+          parent_id?: string | null
+          routine_id?: string
+          sort_order?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habits_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "habits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "habits_routine_id_fkey"
+            columns: ["routine_id"]
+            isOneToOne: false
+            referencedRelation: "routines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reflections: {
+        Row: {
+          created_at: string
+          goals: string | null
+          id: string
+          improve: string | null
+          routine_id: string | null
+          updated_at: string
+          user_id: string
+          week_start: string
+          went_well: string | null
+        }
+        Insert: {
+          created_at?: string
+          goals?: string | null
+          id?: string
+          improve?: string | null
+          routine_id?: string | null
+          updated_at?: string
+          user_id: string
+          week_start: string
+          went_well?: string | null
+        }
+        Update: {
+          created_at?: string
+          goals?: string | null
+          id?: string
+          improve?: string | null
+          routine_id?: string | null
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+          went_well?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reflections_routine_id_fkey"
+            columns: ["routine_id"]
+            isOneToOne: false
+            referencedRelation: "routines"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      routines: {
+        Row: {
+          color: string | null
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          sort_order: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      time_capsules: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          unlock_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          unlock_at: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          unlock_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          active_routine_id: string | null
+          canvas_offset_x: number | null
+          canvas_offset_y: number | null
+          canvas_zoom: number | null
+          created_at: string
+          id: string
+          show_weekends: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active_routine_id?: string | null
+          canvas_offset_x?: number | null
+          canvas_offset_y?: number | null
+          canvas_zoom?: number | null
+          created_at?: string
+          id?: string
+          show_weekends?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active_routine_id?: string | null
+          canvas_offset_x?: number | null
+          canvas_offset_y?: number | null
+          canvas_zoom?: number | null
+          created_at?: string
+          id?: string
+          show_weekends?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
