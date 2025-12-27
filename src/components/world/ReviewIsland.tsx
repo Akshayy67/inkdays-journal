@@ -215,19 +215,20 @@ const ReviewIsland: React.FC<ReviewIslandProps> = ({ routine, allRoutines }) => 
                       <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" opacity={0.5} />
                   <XAxis 
                     dataKey="date" 
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                    tick={{ fontSize: 10 }}
                     tickLine={false}
-                    axisLine={{ stroke: 'hsl(var(--border))' }}
+                    className="text-muted-foreground [&_text]:fill-muted-foreground"
                   />
                   <YAxis 
-                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                    tick={{ fontSize: 10 }}
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value) => `${value}%`}
                     domain={[0, 100]}
+                    className="text-muted-foreground [&_text]:fill-muted-foreground"
                   />
                   <Tooltip 
                     contentStyle={{ 
@@ -266,19 +267,20 @@ const ReviewIsland: React.FC<ReviewIslandProps> = ({ routine, allRoutines }) => 
           <div className="h-40 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={analytics.weeks} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" opacity={0.5} vertical={false} />
                 <XAxis 
                   dataKey="week" 
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                  tick={{ fontSize: 10 }}
                   tickLine={false}
-                  axisLine={{ stroke: 'hsl(var(--border))' }}
+                  className="text-muted-foreground [&_text]:fill-muted-foreground"
                 />
                 <YAxis 
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                  tick={{ fontSize: 10 }}
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={(value) => `${value}%`}
                   domain={[0, 100]}
+                  className="text-muted-foreground [&_text]:fill-muted-foreground"
                 />
                 <Tooltip 
                   contentStyle={{ 
@@ -320,22 +322,24 @@ const ReviewIsland: React.FC<ReviewIslandProps> = ({ routine, allRoutines }) => 
                     layout="vertical" 
                     margin={{ top: 0, right: 10, left: 0, bottom: 0 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} horizontal={false} />
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" opacity={0.5} horizontal={false} />
                     <XAxis 
                       type="number"
-                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                      tick={{ fontSize: 10 }}
                       tickLine={false}
                       axisLine={false}
                       tickFormatter={(value) => `${value}%`}
                       domain={[0, 100]}
+                      className="text-muted-foreground [&_text]:fill-muted-foreground"
                     />
                     <YAxis 
                       dataKey="name" 
                       type="category"
-                      tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                      tick={{ fontSize: 10 }}
                       tickLine={false}
                       axisLine={false}
                       width={80}
+                      className="text-muted-foreground [&_text]:fill-muted-foreground"
                     />
                     <Tooltip 
                       contentStyle={{ 
