@@ -3,18 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { AppState, TimeOfDay, Stroke, RecoveryState, RoutineType } from '@/types/habit';
 import { ZoneType, WorldState, defaultWorldState, MilestoneUnlocks } from '@/types/world';
 import {
-  loadState,
-  saveState,
-  addHabit,
-  deleteHabit,
-  updateSettings,
-  addRoutine,
-  toggleHabitExpanded,
-  setActiveRoutine,
-  addReflection,
-  markCelebrationShown,
-} from '@/lib/storage';
-import {
   loadWorldState,
   saveWorldState,
   updateJournalState,
@@ -25,6 +13,7 @@ import {
 } from '@/lib/worldStorage';
 import { getDateKey, getDatesInRange } from '@/lib/habitUtils';
 import { useAuth } from '@/hooks/useAuth';
+import { useSupabaseStorage } from '@/hooks/useSupabaseStorage';
 import SpatialCanvas from '@/components/world/SpatialCanvas';
 import WorldNavigator from '@/components/world/WorldNavigator';
 import continuumHeader from '@/assets/continuum-header.png';
@@ -50,9 +39,19 @@ const Index: React.FC = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   
-  const [state, setState] = useState<AppState | null>(null);
+  const {
+    state,
+    isLoading,
+    addRoutine,
+    addHabit,
+    updateHabitCell,
+    deleteHabit,
+    toggleHabitExpanded,
+    setActiveRoutine,
+    updateSettings,
+  } = useSupabaseStorage();
+  
   const [worldState, setWorldState] = useState<WorldState>(defaultWorldState);
-  const [isLoading, setIsLoading] = useState(true);
   const [isErasing, setIsErasing] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAddRoutineModal, setShowAddRoutineModal] = useState(false);
@@ -69,14 +68,11 @@ const Index: React.FC = () => {
     }
   }, [user, authLoading, navigate]);
 
-  // Load states
+  // Load world state
   useEffect(() => {
     if (!user) return;
-    Promise.all([loadState(), Promise.resolve(loadWorldState())]).then(([appState, world]) => {
-      setState(appState);
-      setWorldState(world);
-      setIsLoading(false);
-    });
+    const world = loadWorldState();
+    setWorldState(world);
   }, [user]);
 
   const handleSignOut = async () => {
@@ -125,10 +121,8 @@ const Index: React.FC = () => {
   const handleCellUpdate = useCallback(
     async (habitId: string, dateKey: string, strokes: Stroke[], density: number, subHabitId?: string) => {
       if (!state || !activeRoutine) return;
-      const newState = { ...state };
-      const routine = newState.routines.find((r) => r.id === activeRoutine.id);
-      if (!routine) return;
-      const habit = routine.habits.find((h) => h.id === habitId);
+      
+      const habit = activeRoutine.habits.find((h) => h.id === habitId);
       if (!habit) return;
 
       const wasCompleted = subHabitId
@@ -136,69 +130,44 @@ const Index: React.FC = () => {
         : habit.cells[dateKey]?.completed;
       const isNowCompleted = strokes.length > 0;
 
-      if (subHabitId) {
-        const subHabit = habit.subHabits?.find((sh) => sh.id === subHabitId);
-        if (subHabit) {
-          subHabit.cells[dateKey] = {
-            strokes,
-            completed: isNowCompleted,
-            strokeDensity: density,
-            completedAt: isNowCompleted ? Date.now() : undefined,
-            timeOfDay: subHabit.timeOfDay,
-          };
-        }
-      } else {
-        habit.cells[dateKey] = {
-          strokes,
-          completed: isNowCompleted,
-          strokeDensity: density,
-          completedAt: isNowCompleted ? Date.now() : undefined,
-          timeOfDay: habit.timeOfDay,
-        };
-      }
-
-      await saveState(newState);
-      setState(newState);
+      await updateHabitCell(activeRoutine.id, habitId, dateKey, density, subHabitId);
+      
       if (!wasCompleted && isNowCompleted) setShowMiniCelebration(true);
     },
-    [state, activeRoutine]
+    [state, activeRoutine, updateHabitCell]
   );
 
   const handleAddHabit = useCallback(
     async (name: string, timeOfDay: TimeOfDay, parentHabitId?: string, intent?: string) => {
       if (!state || !activeRoutine) return;
-      const newState = await addHabit(state, activeRoutine.id, { name, timeOfDay, intent }, parentHabitId);
-      setState(newState);
+      await addHabit(activeRoutine.id, { name, timeOfDay, intent }, parentHabitId);
       toast.success(parentHabitId ? `Added sub-habit: ${name}` : `Added habit: ${name}`);
     },
-    [state, activeRoutine]
+    [state, activeRoutine, addHabit]
   );
 
   const handleDeleteHabit = useCallback(
     async (habitId: string) => {
       if (!state || !activeRoutine) return;
-      const newState = await deleteHabit(state, activeRoutine.id, habitId);
-      setState(newState);
+      await deleteHabit(activeRoutine.id, habitId);
     },
-    [state, activeRoutine]
+    [state, activeRoutine, deleteHabit]
   );
 
   const handleDeleteSubHabit = useCallback(
     async (habitId: string, subHabitId: string) => {
       if (!state || !activeRoutine) return;
-      const newState = await deleteHabit(state, activeRoutine.id, habitId, subHabitId);
-      setState(newState);
+      await deleteHabit(activeRoutine.id, habitId, subHabitId);
     },
-    [state, activeRoutine]
+    [state, activeRoutine, deleteHabit]
   );
 
   const handleToggleExpanded = useCallback(
     async (habitId: string) => {
       if (!state || !activeRoutine) return;
-      const newState = await toggleHabitExpanded(state, activeRoutine.id, habitId);
-      setState(newState);
+      await toggleHabitExpanded(activeRoutine.id, habitId);
     },
-    [state, activeRoutine]
+    [state, activeRoutine, toggleHabitExpanded]
   );
 
   const handleAddRoutine = useCallback(
@@ -209,7 +178,7 @@ const Index: React.FC = () => {
       routineType: RoutineType = 'permanent'
     ) => {
       if (!state) return;
-      const newState = await addRoutine(state, {
+      await addRoutine({
         name,
         duration,
         startDate,
@@ -217,19 +186,17 @@ const Index: React.FC = () => {
         routineType,
         reflections: [],
       });
-      setState(newState);
       toast.success(`Created routine: ${name}`);
     },
-    [state]
+    [state, addRoutine]
   );
 
   const handleSwitchRoutine = useCallback(
     async (routineId: string) => {
       if (!state) return;
-      const newState = await setActiveRoutine(state, routineId);
-      setState(newState);
+      await setActiveRoutine(routineId);
     },
-    [state]
+    [state, setActiveRoutine]
   );
 
   const handleZoneChange = useCallback(
@@ -268,9 +235,9 @@ const Index: React.FC = () => {
   const handleZoomCommit = useCallback(
     (zoom: number) => {
       if (!state) return;
-      updateSettings(state, { zoom }).then(setState);
+      updateSettings({ zoom });
     },
-    [state]
+    [state, updateSettings]
   );
 
   const renderZone = useCallback(
@@ -478,11 +445,11 @@ const Index: React.FC = () => {
         settings={state.settings}
         isErasing={isErasing}
         onToggleErase={() => setIsErasing(!isErasing)}
-        onZoomIn={() => updateSettings(state, { zoom: Math.min(2, state.settings.zoom + 0.1) }).then(setState)}
-        onZoomOut={() => updateSettings(state, { zoom: Math.max(0.25, state.settings.zoom - 0.1) }).then(setState)}
+        onZoomIn={() => updateSettings({ zoom: Math.min(2, state.settings.zoom + 0.1) })}
+        onZoomOut={() => updateSettings({ zoom: Math.max(0.25, state.settings.zoom - 0.1) })}
         onAddHabit={() => setShowAddModal(true)}
         onToggleAnalytics={() => handleNavigate('review')}
-        onUpdateSettings={(s) => updateSettings(state, s).then(setState)}
+        onUpdateSettings={(s) => updateSettings(s)}
         onExport={() => {}}
       />
 
