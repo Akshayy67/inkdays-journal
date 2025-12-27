@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, Mail, Lock, User } from 'lucide-react';
+import { Loader2, Mail, Lock, User, UserX } from 'lucide-react';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Please enter a valid email address');
@@ -18,9 +18,10 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   
-  const { user, signIn, signUp } = useAuth();
+  const { user, signIn, signUp, signInAnonymously } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -79,6 +80,20 @@ export default function Auth() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    setGuestLoading(true);
+    try {
+      const { error } = await signInAnonymously();
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Welcome, guest!');
+      }
+    } finally {
+      setGuestLoading(false);
     }
   };
 
@@ -164,7 +179,7 @@ export default function Auth() {
             <Button 
               type="submit" 
               className="w-full"
-              disabled={loading}
+              disabled={loading || guestLoading}
             >
               {loading ? (
                 <>
@@ -173,6 +188,35 @@ export default function Auth() {
                 </>
               ) : (
                 isLogin ? 'Sign In' : 'Create Account'
+              )}
+            </Button>
+
+            <div className="relative w-full">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">or</span>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleGuestLogin}
+              disabled={loading || guestLoading}
+            >
+              {guestLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Continuing as guest...
+                </>
+              ) : (
+                <>
+                  <UserX className="mr-2 h-4 w-4" />
+                  Continue as Guest
+                </>
               )}
             </Button>
             
